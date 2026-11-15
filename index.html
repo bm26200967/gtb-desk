@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://fapi.binance.com https://api.github.com https://raw.githubusercontent.com; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<meta name="theme-color" content="#0a0f1f">
+<link rel="icon" href="data:,">
+<title>My Live Desk</title>
+<style>
+:root{--bg:#0a0f1f;--card:#131a2e;--card2:#1a2240;--line:#26304f;--txt:#eef2ff;--dim:#93a0c4;--green:#22c55e;--red:#f43f5e;
+--gold:#f59e0b;--blue:#60a5fa;--purple:#c084fc;--cyan:#22d3ee;--yellow:#facc15}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding-bottom:40px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#0a0f1f 85%,rgba(10,15,31,.0));padding:10px 12px 4px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{font-size:20px;margin:0;font-weight:800;letter-spacing:.2px}
+h1 span{background:linear-gradient(90deg,#f59e0b,#f43f5e,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.clock{font-size:13px;color:var(--dim);text-align:right}
+.status{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px;font-size:12px}
+.pill{padding:3px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle;background:#64748b}
+.dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)} .dot.bad{background:var(--red)} .dot.warn{background:var(--yellow)}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+nav.tabs button{background:var(--card);color:var(--dim);border:1px solid var(--line);border-radius:12px;padding:9px 2px;font-size:13px;font-weight:700}
+nav.tabs button.on{background:linear-gradient(135deg,#1e3a8a,#6d28d9);color:#fff;border-color:transparent}
+nav.tabs .n{display:block;font-size:11px;font-weight:600;opacity:.85}
+.filters{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.filters button{flex:0 0 auto;background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.filters button.on{background:#f8fafc;color:#0a0f1f}
+main{padding:4px 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.card.fire{border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(90deg,#c2410c,#f59e0b,#facc15) border-box}
+.card.risky{border:2px dashed #a855f7}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.coin{font-size:20px;font-weight:800}
+.coin small{font-size:12px;color:var(--dim);font-weight:600}
+.badge{display:inline-block;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:800;margin:2px 4px 2px 0}
+.b-long{background:rgba(34,197,94,.15);color:var(--green)} .b-short{background:rgba(244,63,94,.15);color:var(--red)}
+.b-main{background:rgba(245,158,11,.18);color:var(--gold)} .b-second{background:rgba(96,165,250,.18);color:var(--blue)}
+.b-risky{background:rgba(192,132,252,.2);color:var(--purple)} .b-test{background:#7c3aed;color:#fff}
+.b-live{background:rgba(34,211,238,.18);color:var(--cyan)} .b-dim{background:var(--card2);color:var(--dim)}
+.b-warn{background:rgba(250,204,21,.18);color:var(--yellow)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.box{background:var(--card2);border-radius:12px;padding:8px 10px}
+.box .l{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.box .v{font-size:16px;font-weight:800;margin-top:2px;word-break:break-all}
+.big{font-size:34px;font-weight:900;letter-spacing:-.5px}
+.mid{font-size:22px;font-weight:800}
+.g{color:var(--green)} .r{color:var(--red)} .d{color:var(--dim)} .y{color:var(--yellow)}
+.why{font-size:14px;color:#cbd5f5;margin-top:10px}
+.ev{margin:6px 0 0 0;padding-left:18px;font-size:13px;color:#cbd5f5}
+.bar{position:relative;height:10px;border-radius:6px;margin:14px 0 4px;background:linear-gradient(90deg,var(--red),#334155 50%,var(--green))}
+.bar.rev{background:linear-gradient(90deg,var(--green),#334155 50%,var(--red))}
+.bar i{position:absolute;top:-5px;width:4px;height:20px;border-radius:2px;background:#fff;box-shadow:0 0 6px #fff}
+.bar b{position:absolute;top:-4px;width:2px;height:18px;background:var(--yellow)}
+.barl{display:flex;justify-content:space-between;font-size:11px;color:var(--dim)}
+.banner{border-radius:14px;padding:12px 14px;margin:10px 0;font-weight:700;font-size:14px}
+.test{background:linear-gradient(135deg,#7c2d12,#a16207);color:#fff}
+.err{background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.4);color:#fde68a;font-weight:600}
+.alert{background:linear-gradient(135deg,#7f1d1d,#9f1239);color:#fff}
+.acc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.acc .card{margin:0;padding:10px}
+.acc .t{font-size:12px;font-weight:800}
+.acc .v{font-size:17px;font-weight:900;margin:4px 0 2px}
+.acc .s{font-size:11px;color:var(--dim)}
+.empty{text-align:center;color:var(--dim);padding:30px 10px;font-size:15px}
+.sec{font-size:15px;font-weight:800;margin:18px 2px 4px;color:#c7d2fe}
+.small{font-size:12px;color:var(--dim)}
+.ord{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ord:last-child{border-bottom:0}
+#lock{position:fixed;inset:0;z-index:20;background:radial-gradient(circle at 30% 20%,#1e1b4b,#0a0f1f 70%);display:none;align-items:center;justify-content:center;padding:20px}
+#lock .in{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;text-align:center}
+#lock input[type=password]{width:100%;font-size:22px;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0b1226;color:#fff;text-align:center;letter-spacing:4px;margin:14px 0 10px}
+#lock button{width:100%;font-size:17px;font-weight:800;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+#lock label{display:block;font-size:14px;color:var(--dim);margin:4px 0 14px}
+#lockMsg{min-height:20px;margin-top:10px;font-size:14px;font-weight:600}
+.lockbtn{background:none;border:1px solid var(--line);color:var(--dim);border-radius:10px;padding:4px 8px;font-size:12px;margin-top:4px}
+footer{text-align:center;color:var(--dim);font-size:12px;padding:20px 16px}
+details summary{cursor:pointer;color:var(--blue);font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="lock"><div class="in"><div style="font-size:40px">🔐</div><div style="font-size:20px;font-weight:800;margin-top:6px">My Live Desk</div>
+<div class="small" style="margin-top:6px">Type your PIN to open your desk.</div>
+<form id="lockForm" autocomplete="off"><input id="pin" type="password" autocomplete="current-password" placeholder="PIN" aria-label="PIN">
+<label><input id="remember" type="checkbox" checked> Remember on this phone</label>
+<button id="unlockBtn" type="submit">Open</button></form><div id="lockMsg"></div></div></div>
+<header>
+  <div class="top">
+    <h1>📈 <span>My Live Desk</span></h1>
+    <div class="clock"><div id="clock">—</div><div style="font-size:11px">Sri Lanka time</div><button class="lockbtn" id="lockNow" type="button">🔒 Lock</button></div>
+  </div>
+  <div class="status">
+    <span class="pill"><span id="dPrice" class="dot"></span><span id="sPrice">Prices: starting…</span></span>
+    <span class="pill"><span id="dBin" class="dot"></span><span id="sBin">Binance: starting…</span></span>
+    <span class="pill"><span id="dLed" class="dot"></span><span id="sLed">Bot: starting…</span></span>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="filters" id="filters"></div>
+</header>
+<main id="main"><div class="empty">Loading…</div></main>
+<footer>These are trade <b>ideas</b>, not guarantees. Prices can move fast. Only trade money you can afford to lose.<br>
+This page only <b>shows</b> information. It cannot place or close trades. Your data is locked with your PIN.</footer>
+<script>
+"use strict";
+const POS = 100, MARGIN = 10, FEE = 0.0005;      // practice: 10 USDT margin x10 = 100 USDT position, ~0.05% fee per side
+const TZ = "Asia/Colombo";
+const ACTIVE = ["new", "waiting", "paused"];
+const HT = (location.hash || "").slice(1);
+const S = { tab: ["binance", "ideas", "running", "history"].includes(HT) ? HT : (localStorage.getItem("ld_tab") || "binance"), filt: localStorage.getItem("ld_filt") || "all",
+  ledger: null, ledgerAt: 0, live: null, liveAt: 0, liveErr: null, prices: {}, pricesAt: 0, priceErr: false,
+  touch: JSON.parse(localStorage.getItem("ld_touch_v1") || "{}"), ref: JSON.parse(localStorage.getItem("ld_ref_v1") || "{}") };
+
+// ---------- helpers
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = x => (typeof x === "number" && isFinite(x)) ? x : (x != null && x !== "" && isFinite(+x) ? +x : null);
+function fp(n) { n = num(n); if (n == null) return "—"; const a = Math.abs(n);
+  if (a >= 1000) return n.toLocaleString("en-US", { maximumFractionDigits: 2 }); if (a >= 1) return n.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  return n.toPrecision(4); }
+function usd(n, dp = 2) { n = num(n); if (n == null) return "—"; return (n > 0.0049 ? "+" : n < -0.0049 ? "−" : "") + Math.abs(n).toFixed(dp) + " USDT"; }
+function plain(n, dp = 2) { n = num(n); return n == null ? "—" : n.toFixed(dp); }
+function pc(n) { n = num(n); if (n == null) return "—"; return (n > 0.004 ? "+" : n < -0.004 ? "−" : "") + Math.abs(n).toFixed(2) + "%"; }
+const cls = n => (num(n) || 0) > 0.0049 ? "g" : (num(n) || 0) < -0.0049 ? "r" : "d";
+const coinName = s => String(s || "").replace(/USDT$/, "");
+function tms(s) { if (!s) return NaN; const t = Date.parse(s); return t; }
+const fmtT = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" });
+const fmtTs = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit", second: "2-digit" });
+const fmtD = new Intl.DateTimeFormat("en-US", { timeZone: TZ, day: "numeric", month: "short" });
+function when(s) { const t = typeof s === "number" ? s : tms(s); if (isNaN(t)) return "—";
+  const today = fmtD.format(new Date()) === fmtD.format(new Date(t)); return (today ? "" : fmtD.format(new Date(t)) + ", ") + fmtT.format(new Date(t)); }
+function ago(t) { if (!t) return "never"; const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  return s < 60 ? s + "s ago" : s < 3600 ? Math.round(s / 60) + " min ago" : Math.round(s / 3600) + " h ago"; }
+function left(s) { const d = tms(s) - Date.now(); if (isNaN(d)) return ""; if (d <= 0) return "ended";
+  const h = Math.floor(d / 3600000), m = Math.floor(d % 3600000 / 60000); return h > 24 ? Math.floor(h / 24) + " days " + (h % 24) + " h" : h > 0 ? h + " h " + m + " min" : m + " min"; }
+const strat = t => t.strategy || "main";
+function priceOf(coin) { const p = S.prices[coin]; if (p != null) return p; const lp = S.ledger && S.ledger.prices; return lp ? num(lp[coin]) : null; }
+// practice PnL of the full 100 USDT position from entry to price p (after fees both sides)
+function pnlAt(t, p, entry) { entry = num(entry != null ? entry : t.entry); p = num(p); if (!entry || p == null) return null;
+  const dir = t.side === "SHORT" ? -1 : 1, q = POS / entry; return dir * (p - entry) * q - FEE * POS - FEE * p * q; }
+function sideBadge(side) { return side === "SHORT" ? '<span class="badge b-short">📉 SHORT · wins if price goes DOWN</span>' : '<span class="badge b-long">📈 LONG · wins if price goes UP</span>'; }
+function stratBadge(t) { const s = strat(t);
+  if (s === "risky") return '<span class="badge b-risky">🎲 HIGH RISK</span><span class="badge b-test">TEST ONLY</span>';
+  if (s === "second") return '<span class="badge b-second">⚡ SECOND</span>';
+  return '<span class="badge b-main">' + ((num(t.score) || 0) >= 80 ? "🔥 MAIN" : "🔥 MAIN") + '</span>'; }
+const RT = { counter_trend: "Against the trend", meme_fomo: "Meme / hype coin", news_catalyst: "News move", breakout: "Breakout",
+  mean_reversion: "Snap-back", funding_squeeze: "Funding squeeze" };
+function saveTouch() { localStorage.setItem("ld_touch_v1", JSON.stringify(S.touch)); localStorage.setItem("ld_ref_v1", JSON.stringify(S.ref)); }
+
+// ---------- live "entered" check for waiting ideas (client side, until the hourly bot update)
+function liveCheck() {
+  const L = S.ledger; if (!L || !Array.isArray(L.trades)) return;
+  let changed = false; const ids = new Set();
+  for (const t of L.trades) {
+    ids.add(t.id);
+    const p = S.prices[t.coin], e = num(t.entry);
+    if (p == null || e == null) continue;
+    if (t.status === "new" || t.status === "waiting") {
+      if (t.expiresAt && tms(t.expiresAt) < Date.now()) continue;
+      const key = t.id + "@" + e;
+      let tc = S.touch[key];
+      if (!tc) {
+        let ref = S.ref[key];
+        if (ref == null) { ref = (L.prices && num(L.prices[t.coin])) || p; S.ref[key] = ref; changed = true; }
+        if ((ref >= e && p <= e) || (ref <= e && p >= e)) { tc = S.touch[key] = { at: Date.now() }; changed = true; }
+      }
+      if (tc && !tc.hit) {
+        const dir = t.side === "SHORT" ? -1 : 1, sl = num(t.sl), tp = num(t.tp);
+        if (tp != null && dir * (p - tp) >= 0) { tc.hit = "tp"; tc.hitAt = Date.now(); changed = true; }
+        else if (sl != null && dir * (p - sl) <= 0) { tc.hit = "sl"; tc.hitAt = Date.now(); changed = true; }
+      }
+    }
+  }
+  for (const k of Object.keys(S.touch)) if (!ids.has(k.split("@")[0])) { delete S.touch[k]; changed = true; }
+  for (const k of Object.keys(S.ref)) if (!ids.has(k.split("@")[0])) { delete S.ref[k]; changed = true; }
+  if (changed) saveTouch();
+}
+const touched = t => (t.status === "new" || t.status === "waiting") ? S.touch[t.id + "@" + num(t.entry)] : null;
+
+// ---------- data loading
+async function getJSON(url, ms = 9000) {
+  const c = new AbortController(); const tm = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, { cache: "no-store", signal: c.signal, referrerPolicy: "no-referrer" }); if (!r.ok) throw new Error("HTTP " + r.status); return await r.json(); }
+  finally { clearTimeout(tm); }
+}
+const REPO = "bm26200967/gtb-desk";
+const SRC_API = "https://api.github.com/repos/" + REPO + "/contents/data.enc.json?ref=data";
+const SRC_RAW = "https://raw.githubusercontent.com/" + REPO + "/data/data.enc.json";
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ub64 = a => btoa(String.fromCharCode(...new Uint8Array(a)));
+let KEY = null, ENV = null, apiBlockedUntil = 0;
+async function derive(pin, env) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64(env.salt), iterations: env.iter }, base, 256);
+  return { raw: bits, salt: env.salt, iter: env.iter };
+}
+async function openEnv(env, k) {
+  const key = await crypto.subtle.importKey("raw", k.raw, "AES-GCM", false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(env.iv), additionalData: new TextEncoder().encode(env.aad || "") }, key, b64(env.ct));
+  const ds = new Blob([plain]).stream().pipeThrough(new DecompressionStream("deflate"));
+  return JSON.parse(await new Response(ds).text());
+}
+function savedKey() { try { const k = JSON.parse(localStorage.getItem("gtb_key_v1") || "null"); return k ? { raw: b64(k.raw).buffer, salt: k.salt, iter: k.iter } : null; } catch (e) { return null; } }
+function showLock(msg) { $("lock").style.display = "flex"; $("lockMsg").innerHTML = msg || ""; setTimeout(() => $("pin").focus(), 50); }
+function hideLock() { $("lock").style.display = "none"; }
+async function fetchEnv() {
+  // 1) GitHub API (fresh within ~1 min). The phone re-asks with If-None-Match, and an unchanged answer (304) is free.
+  if (Date.now() > apiBlockedUntil) {
+    try {
+      const c = new AbortController(); const tm = setTimeout(() => c.abort(), 10000);
+      const r = await fetch(SRC_API, { cache: "no-cache", headers: { Accept: "application/vnd.github.raw+json" }, signal: c.signal, referrerPolicy: "no-referrer" });
+      clearTimeout(tm);
+      if (r.ok) { S.src = "GitHub"; return await r.json(); }
+      if (r.status === 403 || r.status === 429) { const reset = +r.headers.get("x-ratelimit-reset"); apiBlockedUntil = reset ? reset * 1000 : Date.now() + 15 * 60e3; }
+    } catch (e) { }
+  }
+  // 2) raw.githubusercontent.com (no limit, but GitHub may cache it up to ~5 min)
+  const r = await fetch(SRC_RAW + "?t=" + Math.floor(Date.now() / 30000), { cache: "no-store", referrerPolicy: "no-referrer" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  S.src = "GitHub (slow copy)"; return await r.json();
+}
+async function useEnv(env) {
+  if (!KEY || KEY.salt !== env.salt || KEY.iter !== env.iter) { KEY = savedKey(); if (KEY && (KEY.salt !== env.salt || KEY.iter !== env.iter)) KEY = null; }
+  if (!KEY) { showLock(); return; }
+  try { const d = await openEnv(env, KEY); S.live = d.live; S.ledger = d.ledger; S.dataAt = tms(env.at || d.updatedAt); S.liveAt = S.dataAt; S.ledgerAt = Date.now();
+    S.liveErr = (d.live && d.live.errors && d.live.errors.length) ? d.live.errors[0] : (d.live && d.live.ok ? null : "Binance not reachable");
+    hideLock(); liveCheck(); render(); }
+  catch (e) { KEY = null; localStorage.removeItem("gtb_key_v1"); showLock("Your PIN changed. Please type it again."); }
+}
+async function loadData(force) {
+  if (document.hidden && S.ledger && !force) return;
+  try { ENV = await fetchEnv(); S.dataErr = null; await useEnv(ENV); }
+  catch (e) { S.dataErr = "Can't reach GitHub right now"; render(); }
+}
+document.addEventListener("submit", async ev => {
+  if (ev.target.id !== "lockForm") return; ev.preventDefault();
+  const pin = $("pin").value; if (!pin) return;
+  $("unlockBtn").disabled = true; $("lockMsg").innerHTML = '<span class="d">Checking… (takes a few seconds the first time)</span>';
+  try {
+    if (!ENV) ENV = await fetchEnv();
+    const k = await derive(pin, ENV);
+    try { await openEnv(ENV, k); } catch (e) { $("lockMsg").innerHTML = '<span class="r">❌ Wrong PIN. Please try again.</span>'; $("unlockBtn").disabled = false; $("pin").select(); return; }
+    KEY = k; if ($("remember").checked) localStorage.setItem("gtb_key_v1", JSON.stringify({ raw: ub64(k.raw), salt: k.salt, iter: k.iter }));
+    $("pin").value = ""; await useEnv(ENV);
+  } catch (e) { $("lockMsg").innerHTML = '<span class="y">Can\'t reach GitHub right now. Check your internet and try again.</span>'; }
+  $("unlockBtn").disabled = false;
+});
+document.addEventListener("click", ev => { if (ev.target.id === "lockNow") { KEY = null; localStorage.removeItem("gtb_key_v1"); S.live = null; S.ledger = null; lastHTML = ""; $("main").innerHTML = ""; showLock("Locked. Type your PIN to open again."); } });
+function wantedCoins() {
+  const set = new Set();
+  const L = S.ledger; if (L && L.trades) for (const t of L.trades) if (ACTIVE.includes(t.status) || t.status === "running") set.add(t.coin);
+  const V = S.live; if (V) { for (const p of V.positions || []) set.add(p.symbol); for (const o of V.openOrders || []) set.add(o.symbol); }
+  ["BTCUSDT", "ETHUSDT"].forEach(c => set.add(c));
+  return [...set].filter(Boolean);
+}
+async function loadPrices() {
+  if (document.hidden) return;
+  const coins = wantedCoins(); const B = "https://fapi.binance.com/fapi/v1/ticker/price";
+  try {
+    if (coins.length > 12) {
+      const all = await getJSON(B, 8000); for (const x of all) S.prices[x.symbol] = +x.price;
+    } else {
+      const res = await Promise.allSettled(coins.map(c => getJSON(B + "?symbol=" + encodeURIComponent(c), 8000)));
+      let ok = 0; for (const r of res) if (r.status === "fulfilled" && r.value && r.value.symbol) { S.prices[r.value.symbol] = +r.value.price; ok++; }
+      if (!ok && coins.length) throw new Error("no prices");
+    }
+    S.pricesAt = Date.now(); S.priceErr = false;
+  } catch (e) { S.priceErr = true; }
+  liveCheck(); render();
+}
+
+// ---------- UI pieces
+const TABS = [["binance", "💰", "My Binance"], ["ideas", "💡", "Ideas"], ["running", "🏃", "Running"], ["history", "📜", "History"]];
+const FILTS = [["all", "All"], ["main", "🔥 Main"], ["second", "⚡ Second"], ["risky", "🎲 High risk"]];
+function lists() {
+  const T = (S.ledger && S.ledger.trades) || [];
+  const ideas = T.filter(t => ACTIVE.includes(t.status) && !touched(t));
+  const running = T.filter(t => t.status === "running").concat(T.filter(t => touched(t)));
+  const hist = T.filter(t => ["closed", "cancelled", "expired"].includes(t.status)).sort((a, b) => (tms(b.closedAt || b.sent) || 0) - (tms(a.closedAt || a.sent) || 0));
+  return { ideas, running, hist };
+}
+function drawTabs() {
+  const l = lists(); const pos = (S.live && S.live.positions || []).length;
+  const n = { binance: pos ? pos + " open" : "real money", ideas: l.ideas.length, running: l.running.length, history: l.hist.length };
+  $("tabs").innerHTML = TABS.map(([k, ic, name]) => `<button class="${S.tab === k ? "on" : ""}" data-tab="${k}">${ic} ${name}<span class="n">${n[k]}</span></button>`).join("");
+  if (S.tab === "binance") { $("filters").innerHTML = ""; return; }
+  const cur = S.tab === "ideas" ? l.ideas : S.tab === "running" ? l.running : l.hist;
+  $("filters").innerHTML = FILTS.map(([k, name]) => `<button class="${S.filt === k ? "on" : ""}" data-f="${k}">${name} (${k === "all" ? cur.length : cur.filter(t => strat(t) === k).length})</button>`).join("");
+}
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.tab) { S.tab = b.dataset.tab; localStorage.setItem("ld_tab", S.tab); window.scrollTo(0, 0); render(); }
+  if (b.dataset.f) { S.filt = b.dataset.f; localStorage.setItem("ld_filt", S.filt); render(); }
+});
+
+function statusPills() {
+  const pAge = S.pricesAt ? (Date.now() - S.pricesAt) / 1000 : 1e9;
+  $("dPrice").className = "dot " + (S.priceErr && pAge > 20 ? "bad" : pAge < 15 ? "ok" : "warn");
+  $("sPrice").textContent = S.pricesAt ? "Prices " + ago(S.pricesAt) : (S.priceErr ? "Prices: not reachable" : "Prices: loading");
+  const V = S.live;
+  const dAge = S.dataAt ? Date.now() - S.dataAt : 1e12;
+  $("dBin").className = "dot " + (!V ? "" : (S.dataErr || dAge > 45 * 60e3) ? "bad" : S.liveErr ? "warn" : "ok");
+  $("sBin").textContent = !V ? "Desk data: loading" : S.dataErr ? "GitHub not reachable" : (dAge > 45 * 60e3 ? "Desk data OLD: " + ago(S.dataAt) : "Desk data " + ago(S.dataAt));
+  const L = S.ledger; const up = L && L.updated ? tms(L.updated) : 0;
+  $("dLed").className = "dot " + (!L ? "" : (Date.now() - up < 2 * 3600e3 ? "ok" : "warn"));
+  $("sLed").textContent = L ? "Bot check " + when(L.updated) : "Bot: loading";
+}
+
+function accCards() {
+  const L = S.ledger; if (!L) return "";
+  const A = L.accounts || {}; const l = lists();
+  const cfg = [["main", "🔥 Main", "var(--gold)"], ["second", "⚡ Second", "var(--blue)"], ["risky", "🎲 High risk", "var(--purple)"]];
+  return `<div class="sec">🎮 Practice money (not real)</div><div class="acc">` + cfg.map(([k, name, col]) => {
+    const a = A[k] || { start: 1000, balance: 1000 }; let open = 0, n = 0;
+    for (const t of l.running) if (strat(t) === k) { const tc = touched(t); const p = tc && tc.hit ? (tc.hit === "tp" ? t.tp : t.sl) : priceOf(t.coin); const v = pnlAt(t, p); if (v != null) { open += v; n++; } }
+    const bal = num(a.balance) != null ? a.balance : a.start, now = bal + open, w = a.wins || 0, ls = a.losses || 0, closed = w + ls + (a.even || 0);
+    const wr = (w + ls) ? Math.round(w / (w + ls) * 100) + "%" + ((w + ls) < 10 ? " (early)" : "") : "no trades yet";
+    return `<div class="card" style="border-top:3px solid ${col}"><div class="t" style="color:${col}">${name}${k === "risky" ? ' <span class="badge b-test" style="font-size:9px;padding:1px 4px">TEST</span>' : ""}</div>
+      <div class="v">${plain(now)}</div><div class="s">start ${plain(a.start, 0)} USDT</div>
+      <div class="s ${cls(open)}">${n ? "open " + usd(open) : "no open trades"}</div>
+      <div class="s">✅ ${w} · ❌ ${ls} · win ${wr}</div></div>`;
+  }).join("") + `</div>`;
+}
+
+function alertsBox() {
+  const L = S.ledger; if (!L || !Array.isArray(L.alerts)) return "";
+  const a = L.alerts.filter(x => x && x.active && (!x.time || Date.now() - tms(x.time) < 48 * 3600e3));
+  return a.map(x => `<div class="banner alert">🚨 ${esc(x.kind || "ALERT")}${x.coin ? " · " + esc(coinName(x.coin)) : ""}<div style="font-weight:500;margin-top:4px">${esc(x.text)}</div><div class="small" style="color:#fecdd3">${when(x.time)}</div></div>`).join("");
+}
+
+function levelsBar(t, p) {
+  const sl = num(t.sl), tp = num(t.tp), e = num(t.entry); if (sl == null || tp == null || p == null) return "";
+  const lo = Math.min(sl, tp), hi = Math.max(sl, tp), pos = x => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+  const rev = sl > tp; // SHORT: stop on the right
+  return `<div class="bar ${rev ? "rev" : ""}"><b style="left:${pos(e)}%"></b><i style="left:calc(${pos(p)}% - 2px)"></i></div>
+    <div class="barl"><span>${rev ? "🎯 TP " + fp(tp) : "🛑 SL " + fp(sl)}</span><span class="y">entry ${fp(e)}</span><span>${rev ? "🛑 SL " + fp(sl) : "🎯 TP " + fp(tp)}</span></div>`;
+}
+function riskyBlock(t) {
+  if (strat(t) !== "risky") return "";
+  const st = L_stats(t.riskyType); const ev = Array.isArray(t.evidence) ? t.evidence : [];
+  return `<div class="why">🎲 <b>${esc(RT[t.riskyType] || t.riskyType || "High risk idea")}</b> · ${st}</div>
+    ${t.whyText ? `<div class="why">${esc(t.whyText)}</div>` : ""}
+    ${ev.length ? `<details><summary>Why I think this (${ev.length} points)</summary><ul class="ev">${ev.map(x => `<li>${esc(typeof x === "string" ? x : (x.text || JSON.stringify(x)))}</li>`).join("")}</ul></details>` : ""}
+    ${num(t.stretchTarget) != null ? `<div class="why">🚀 Stretch target (only if it runs far): <b>${fp(t.stretchTarget)}</b> → ${usd(pnlAt(t, t.stretchTarget))}</div>` : ""}`;
+}
+function L_stats(type) {
+  const b = S.ledger && S.ledger.stats && S.ledger.stats.by_risky_type && S.ledger.stats.by_risky_type[type];
+  if (!b || !b.closed) return "win rate: no finished trades yet";
+  const wl = (b.wins || 0) + (b.losses || 0); const wr = wl ? Math.round(b.wins / wl * 100) : 0;
+  return wl < 10 ? `win rate so far ${wr}% (only ${wl} trades, too early to trust)` : `win rate ${wr}% from ${wl} trades`;
+}
+function ideaCard(t) {
+  const p = priceOf(t.coin), e = num(t.entry); const dist = (p != null && e) ? (e - p) / p * 100 : null;
+  const st = t.status === "paused" ? '<span class="badge b-warn">⏸️ Paused (big news)</span>' : t.status === "new" ? '<span class="badge b-live">🆕 New</span>' : '<span class="badge b-dim">⏳ Waiting for price</span>';
+  const fire = strat(t) === "main" && (num(t.score) || 0) >= 80;
+  return `<div class="card ${fire ? "fire" : ""} ${strat(t) === "risky" ? "risky" : ""}">
+    <div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div class="mid">${num(t.score) != null ? t.score : ""}<span class="small"> score</span></div></div>
+    <div>${stratBadge(t)}${sideBadge(t.side)}${st}</div>
+    <div class="grid3"><div class="box"><div class="l">Enter at</div><div class="v y">${fp(e)}</div></div>
+      <div class="box"><div class="l">Price now</div><div class="v">${fp(p)}</div></div>
+      <div class="box"><div class="l">Distance</div><div class="v">${dist == null ? "—" : pc(dist)}</div></div></div>
+    <div class="grid2"><div class="box"><div class="l">🎯 Take profit</div><div class="v g">${fp(t.tp)}</div><div class="small g">${usd(pnlAt(t, t.tp))}</div></div>
+      <div class="box"><div class="l">🛑 Stop loss</div><div class="v r">${fp(t.sl)}</div><div class="small r">${usd(pnlAt(t, t.sl))}</div></div></div>
+    ${levelsBar(t, p)}
+    ${(t.chance || t.risk) ? `<div class="small" style="margin-top:8px">Chance: <b>${esc(t.chance || "—")}</b> · Risk: <b>${esc(t.risk || "—")}</b>${t.orderType ? " · " + esc(t.orderType) + " order" : ""}</div>` : ""}
+    ${t.why && strat(t) !== "risky" ? `<div class="why">💬 ${esc(t.why)}</div>` : ""}
+    ${riskyBlock(t)}
+    <div class="small" style="margin-top:8px">Sent ${when(t.sent)}${t.expiresAt ? " · ends in " + left(t.expiresAt) : ""} · practice: 10 USDT × 10</div></div>`;
+}
+function runCard(t) {
+  const tc = touched(t); let p = priceOf(t.coin);
+  const hitP = tc && tc.hit ? (tc.hit === "tp" ? num(t.tp) : num(t.sl)) : null;
+  const v = pnlAt(t, hitP != null ? hitP : p), roe = v == null ? null : v / MARGIN * 100;
+  const step = t.stopStep === "noloss" ? '<span class="badge b-live">🛡️ Stop moved to entry: no loss now</span>' : t.stopStep === "half" ? '<span class="badge b-live">💰 Half of the profit is locked</span>' : "";
+  let liveTag = "";
+  if (tc) liveTag = tc.hit === "tp" ? '<span class="badge b-long">🎯 Target reached (live check)</span>' : tc.hit === "sl" ? '<span class="badge b-short">🛑 Stop loss hit (live check)</span>' : '<span class="badge b-live">⚡ Entered (live)</span>';
+  else { const dir = t.side === "SHORT" ? -1 : 1; if (p != null && num(t.tp) != null && dir * (p - t.tp) >= 0) liveTag = '<span class="badge b-long">🎯 Price reached the target</span>';
+    else if (p != null && num(t.sl) != null && dir * (p - t.sl) <= 0) liveTag = '<span class="badge b-short">🛑 Price reached the stop loss</span>'; }
+  return `<div class="card ${strat(t) === "risky" ? "risky" : ""}">
+    <div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div style="text-align:right"><div class="big ${cls(v)}">${usd(v)}</div><div class="${cls(v)}" style="font-weight:800">${pc(roe)}</div></div></div>
+    <div>${stratBadge(t)}${sideBadge(t.side)}${liveTag}${step}</div>
+    ${tc ? `<div class="small" style="margin-top:6px;color:var(--cyan)">Live price touched the entry at ${when(tc.at)}. The bot will confirm this at its next hourly check.</div>` : ""}
+    <div class="grid3"><div class="box"><div class="l">Entry</div><div class="v y">${fp(t.entry)}</div></div>
+      <div class="box"><div class="l">Now</div><div class="v">${fp(p)}</div></div>
+      <div class="box"><div class="l">Since</div><div class="v" style="font-size:13px">${when(tc ? tc.at : (t.filledAt || t.sent))}</div></div></div>
+    <div class="grid2"><div class="box"><div class="l">🎯 Take profit</div><div class="v g">${fp(t.tp)}</div><div class="small g">${usd(pnlAt(t, t.tp))}</div></div>
+      <div class="box"><div class="l">🛑 Stop loss</div><div class="v r">${fp(t.sl)}</div><div class="small ${cls(pnlAt(t, t.sl))}">${usd(pnlAt(t, t.sl))}</div></div></div>
+    ${levelsBar(t, p)}
+    ${t.note ? `<div class="why">👉 ${esc(t.note)}</div>` : ""}
+    ${t.why && strat(t) !== "risky" ? `<details><summary>Why this trade</summary><div class="why">${esc(t.why)}</div></details>` : ""}
+    ${riskyBlock(t)}
+    <div class="small" style="margin-top:8px">Practice: 10 USDT × 10 · PnL updates with live prices</div></div>`;
+}
+const REASON = { tp: "🎯 Hit take profit", sl: "🛑 Hit stop loss", early: "✋ Closed early", breakeven: "🛡️ Closed at entry (no loss)", locked: "💰 Closed with locked profit" };
+function histCard(t) {
+  if (t.status !== "closed") {
+    return `<div class="card" style="opacity:.8"><div class="row"><div class="coin" style="font-size:17px">${esc(coinName(t.coin))} <small>USDT</small></div><span class="badge b-dim">${t.status === "expired" ? "⌛ Time ran out" : "🚫 Cancelled"}</span></div>
+      <div>${stratBadge(t)}${sideBadge(t.side)}</div><div class="small" style="margin-top:6px">Never started (price did not reach the entry ${fp(t.entry)}).${t.cancelReason ? " " + esc(t.cancelReason) : ""}</div>
+      <div class="small">${when(t.closedAt || t.sent)}</div></div>`;
+  }
+  let v = num(t.pnlUsdt); if (v == null && num(t.exitPrice) != null) v = pnlAt(t, t.exitPrice);
+  const res = t.result === "win" ? "✅ Win" : t.result === "loss" ? "❌ Loss" : t.result === "even" ? "➖ Even" : (v > 0 ? "✅ Win" : v < 0 ? "❌ Loss" : "➖ Even");
+  return `<div class="card ${strat(t) === "risky" ? "risky" : ""}"><div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div class="mid ${cls(v)}">${usd(v)}</div></div>
+    <div>${stratBadge(t)}${sideBadge(t.side)}<span class="badge b-dim">${res}</span></div>
+    <div class="small" style="margin-top:6px">${REASON[t.closedReason] || esc(t.closedReason || "")}</div>
+    <div class="grid3"><div class="box"><div class="l">Entry</div><div class="v">${fp(t.entry)}</div></div><div class="box"><div class="l">Exit</div><div class="v">${fp(t.exitPrice)}</div></div><div class="box"><div class="l">Closed</div><div class="v" style="font-size:13px">${when(t.closedAt)}</div></div></div>
+    ${Array.isArray(t.changes) && t.changes.length ? `<details><summary>What the bot changed (${t.changes.length})</summary><ul class="ev">${t.changes.map(c => `<li>${when(c.at)}: ${esc(c.kind)} ${c.old != null ? fp(c.old) + " → " : ""}${c.new != null ? fp(c.new) : ""} ${esc(c.reason || "")}</li>`).join("")}</ul></details>` : ""}
+    </div>`;
+}
+
+const OT = { LIMIT: "⏳ Waiting to enter", STOP_MARKET: "🛑 Stop loss", STOP: "🛑 Stop loss", TAKE_PROFIT_MARKET: "🎯 Take profit", TAKE_PROFIT: "🎯 Take profit", TRAILING_STOP_MARKET: "📉 Trailing stop", MARKET: "Market" };
+function binanceTab() {
+  const V = S.live; let h = "";
+  if (!V) return '<div class="empty">Connecting to Binance…</div>';
+  if (V.dryRun) h += `<div class="banner test">🧪 TEST MODE — the bot is <u>not</u> trading your real money yet.<div style="font-weight:500;margin-top:4px">The numbers below are your real Binance Futures account. Real trading starts only when you tell me “start real trading”.</div></div>`;
+  if (V.stopFile) h += `<div class="banner alert">⛔ The bot is STOPPED (STOP switch is on). It will not open new trades.</div>`;
+  if (V.bot && V.bot.dayStopHit) h += `<div class="banner alert">⛔ Daily stop hit (−${esc(V.rules && V.rules.daily_stop_usdt)} USDT). No new trades until midnight.</div>`;
+  if (!V.keys) h += `<div class="banner err">No Binance key on the desk computer yet, so I can't show your account.</div>`;
+  else if (S.liveErr) h += `<div class="banner err">⚠️ Binance not reachable right now. ${V.accountAt ? "Showing the last numbers from " + when(V.accountAt) + "." : ""}<div class="small">${esc(S.liveErr)}</div></div>`;
+  const A = V.account; const P = V.positions || [];
+  // live PnL from the browser price where we have it
+  let upnl = 0; const rows = P.map(p => { const lp = S.prices[p.symbol]; const mark = lp != null ? lp : p.mark; const u = lp != null ? p.amt * (lp - p.entry) : p.upnl; upnl += u; return { ...p, lmark: mark, lu: u, lroe: p.margin ? u / p.margin * 100 : p.roe }; });
+  if (A) {
+    const total = A.wallet + (P.length ? upnl : A.unrealized);
+    h += `<div class="card" style="background:linear-gradient(135deg,#0f2a4a,#2e1065);border:0">
+      <div class="small" style="color:#c7d2fe">My Futures balance (with open trades)</div>
+      <div class="big">${plain(total)} <span style="font-size:16px">USDT</span></div>
+      <div class="grid2"><div class="box" style="background:rgba(0,0,0,.25)"><div class="l">Wallet</div><div class="v">${plain(A.wallet)}</div></div>
+      <div class="box" style="background:rgba(0,0,0,.25)"><div class="l">Free to use</div><div class="v">${plain(A.available)}</div></div>
+      <div class="box" style="background:rgba(0,0,0,.25)"><div class="l">Live PnL now</div><div class="v ${cls(P.length ? upnl : A.unrealized)}">${usd(P.length ? upnl : A.unrealized)}</div></div>
+      <div class="box" style="background:rgba(0,0,0,.25)"><div class="l">In trades (margin)</div><div class="v">${plain((A.positionMargin || 0) + (A.orderMargin || 0))}</div></div></div>
+      ${V.income ? `<div class="small" style="margin-top:10px;color:#c7d2fe">Today (since midnight): <b class="${cls(V.income.total)}">${usd(V.income.total)}</b> · closed trades ${usd(V.income.realized)} · fees ${usd(V.income.fees)} · funding ${usd(V.income.funding)}</div>` : ""}
+      <div class="small" style="margin-top:4px;color:#a5b4fc">Balance checked ${V.accountAt ? fmtTs.format(new Date(tms(V.accountAt))) : "—"} · live PnL uses live prices</div></div>`;
+  }
+  h += `<div class="sec">📊 My open trades (${rows.length})</div>`;
+  if (!rows.length) h += `<div class="card empty" style="padding:18px">No open trades right now.</div>`;
+  for (const p of rows) h += `<div class="card"><div class="row"><div class="coin">${esc(coinName(p.symbol))} <small>USDT</small></div><div style="text-align:right"><div class="big ${cls(p.lu)}">${usd(p.lu)}</div><div class="${cls(p.lu)}" style="font-weight:800">${pc(p.lroe)}</div></div></div>
+    <div>${sideBadge(p.side)}<span class="badge b-dim">${p.leverage ? p.leverage + "x" : ""} ${esc((p.marginType || "").toLowerCase())}</span></div>
+    <div class="grid3"><div class="box"><div class="l">Entry</div><div class="v y">${fp(p.entry)}</div></div><div class="box"><div class="l">Price now</div><div class="v">${fp(p.lmark)}</div></div><div class="box"><div class="l">Size</div><div class="v">${fp(Math.abs(p.amt))}</div></div></div>
+    <div class="grid2"><div class="box"><div class="l">Margin</div><div class="v">${plain(p.margin)} USDT</div></div><div class="box"><div class="l">⚠️ Liquidation</div><div class="v r">${fp(p.liq)}</div></div></div></div>`;
+  const O = V.openOrders || [];
+  h += `<div class="sec">📋 My open orders (${O.length})</div>`;
+  if (!O.length) h += `<div class="card empty" style="padding:18px">No open orders.</div>`;
+  else h += `<div class="card">` + O.map(o => `<div class="ord"><div><b>${esc(coinName(o.symbol))}</b> <span class="small">${esc(o.side === "BUY" ? "buy" : "sell")}</span><br><span class="small">${OT[o.type] || esc(o.type)}${o.bot ? " · 🤖 bot" : ""}</span></div>
+     <div style="text-align:right"><b>${fp(o.stopPrice || o.price)}</b><br><span class="small">${o.closePosition ? "closes whole trade" : "qty " + fp(o.qty)}</span></div></div>`).join("") + `</div>`;
+  if (V.rules) h += `<div class="small" style="margin:10px 2px">Bot rules: ${esc(V.rules.margin_usdt)} USDT × ${esc(V.rules.leverage)} per trade · keep ${esc(V.rules.reserve_usdt)} USDT free · max ${esc(V.rules.max_open)} trades · daily stop −${esc(V.rules.daily_stop_usdt)} USDT${V.watcherBeat ? " · watcher checked " + when(V.watcherBeat) : ""}</div>`;
+  h += `<div class="small" style="margin:6px 2px">For tapping buttons and closing trades, use the Binance app. This page only shows.</div>`;
+  return h;
+}
+function listTab(kind) {
+  const l = lists(); let arr = kind === "ideas" ? l.ideas : kind === "running" ? l.running : l.hist;
+  if (S.filt !== "all") arr = arr.filter(t => strat(t) === S.filt);
+  if (kind === "ideas") { const o = { main: 0, second: 1, risky: 2 }; arr = arr.slice().sort((a, b) => (o[strat(a)] - o[strat(b)]) || ((num(b.score) || 0) - (num(a.score) || 0))); }
+  let h = alertsBox() + accCards();
+  const title = { ideas: "💡 Trade ideas", running: "🏃 Running trades", history: "📜 Finished and cancelled" }[kind];
+  h += `<div class="sec">${title}</div>`;
+  if (kind === "running" && arr.some(t => touched(t))) h += `<div class="small" style="margin:0 2px">⚡ “Entered (live)” = the live price touched the entry. The bot confirms at its hourly check.</div>`;
+  if (!arr.length) h += `<div class="card empty">${{ ideas: "No trade ideas right now. The bot checks every hour and only sends good ones.", running: "No running trades right now.", history: "Nothing here yet." }[kind]}</div>`;
+  h += arr.map(kind === "ideas" ? ideaCard : kind === "running" ? runCard : histCard).join("");
+  if (S.ledger) h += `<div class="small" style="margin:12px 2px">Ideas updated by the bot at ${when(S.ledger.updated)} · next check ${when(S.ledger.nextCheck)}</div>`;
+  return h;
+}
+let lastHTML = "";
+function render() {
+  statusPills(); drawTabs();
+  const h = S.tab === "binance" ? binanceTab() : listTab(S.tab);
+  if (h !== lastHTML) {
+    const open = [...document.querySelectorAll("details")].map(d => d.open);
+    $("main").innerHTML = h; lastHTML = h;
+    document.querySelectorAll("details").forEach((d, i) => { if (open[i]) d.open = true; });
+  }
+}
+function tick() { $("clock").textContent = fmtTs.format(new Date()); statusPills(); }
+loadData(true); setTimeout(loadPrices, 600);
+setInterval(loadPrices, 4000); setInterval(loadData, 30000); setInterval(tick, 1000); tick();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { loadPrices(); loadData(); } });
+</script>
+</body>
+</html>
