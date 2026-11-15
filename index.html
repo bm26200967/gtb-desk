@@ -461,7 +461,7 @@ function listTab(kind) {
   let h = alertsBox() + accCards();
   const title = { ideas: "💡 Trade ideas", running: "🏃 Running trades", history: "📜 Finished and cancelled" }[kind];
   h += `<div class="sec">${title}</div>`;
-  if (kind === "running" && arr.some(t => touched(t))) h += `<div class="small" style="margin:0 2px">⚡ “Entered (live)” = the live price touched the entry. The bot confirms at its hourly check.</div>`;
+  if (kind === "running" && arr.some(t => touched(t))) h += `<div class="small" style="margin:0 2px">⚡ “Entered (live)” = the live price touched the entry. The bot confirms at its next check.</div>`;
   if (!arr.length) h += `<div class="card empty">${{ ideas: "No trade ideas right now. The bot checks every 1.5 hours and only sends good ones.", running: "No running trades right now.", history: "Nothing here yet." }[kind]}</div>`;
   h += arr.map(kind === "ideas" ? ideaCard : kind === "running" ? runCard : histCard).join("");
   if (S.ledger) h += `<div class="small" style="margin:12px 2px">Ideas updated by the bot at ${when(S.ledger.updated)} · next check ${when(S.ledger.nextCheck)}</div>`;
