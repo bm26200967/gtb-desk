@@ -215,6 +215,8 @@ async function fetchEnv() {
       const c = new AbortController(); const tm = setTimeout(() => c.abort(), 10000);
       const r = await fetch(SRC_API, { cache: "no-cache", headers: { Accept: "application/vnd.github.raw+json" }, signal: c.signal, referrerPolicy: "no-referrer" });
       clearTimeout(tm);
+      const rem = +r.headers.get("x-ratelimit-remaining");
+      if (!isNaN(rem) && r.headers.get("x-ratelimit-remaining") !== null) S.pollMs = rem > 30 ? 30000 : rem > 12 ? 60000 : 120000;   // stay inside GitHub's free 60/hour
       if (r.ok) { S.src = "GitHub"; return await r.json(); }
       if (r.status === 403 || r.status === 429) { const reset = +r.headers.get("x-ratelimit-reset"); apiBlockedUntil = reset ? reset * 1000 : Date.now() + 15 * 60e3; }
     } catch (e) { }
@@ -222,7 +224,7 @@ async function fetchEnv() {
   // 2) raw.githubusercontent.com (no limit, but GitHub may cache it up to ~5 min)
   const r = await fetch(SRC_RAW + "?t=" + Math.floor(Date.now() / 30000), { cache: "no-store", referrerPolicy: "no-referrer" });
   if (!r.ok) throw new Error("HTTP " + r.status);
-  S.src = "GitHub (slow copy)"; return await r.json();
+  S.src = "GitHub (slow copy)"; S.pollMs = 60000; return await r.json();
 }
 async function useEnv(env) {
   if (!KEY || KEY.salt !== env.salt || KEY.iter !== env.iter) { KEY = savedKey(); if (KEY && (KEY.salt !== env.salt || KEY.iter !== env.iter)) KEY = null; }
@@ -477,7 +479,8 @@ function render() {
 }
 function tick() { $("clock").textContent = fmtTs.format(new Date()); statusPills(); }
 loadData(true); setTimeout(loadPrices, 600);
-setInterval(loadPrices, 4000); setInterval(loadData, 30000); setInterval(tick, 1000); tick();
+setInterval(loadPrices, 4000); setInterval(tick, 1000); tick();
+(function poll() { setTimeout(async () => { await loadData(); poll(); }, S.pollMs || 30000); })();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { loadPrices(); loadData(); } });
 </script>
 </body>
