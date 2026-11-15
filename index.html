@@ -152,7 +152,7 @@ const RT = { counter_trend: "Against the trend", meme_fomo: "Meme / hype coin", 
   mean_reversion: "Snap-back", funding_squeeze: "Funding squeeze" };
 function saveTouch() { localStorage.setItem("ld_touch_v1", JSON.stringify(S.touch)); localStorage.setItem("ld_ref_v1", JSON.stringify(S.ref)); }
 
-// ---------- live "entered" check for waiting ideas (client side, until the hourly bot update)
+// ---------- live "entered" check for waiting ideas (client side, until the next bot check)
 function liveCheck() {
   const L = S.ledger; if (!L || !Array.isArray(L.trades)) return;
   let changed = false; const ids = new Set();
@@ -386,7 +386,7 @@ function runCard(t) {
   return `<div class="card ${strat(t) === "risky" ? "risky" : ""}">
     <div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div style="text-align:right"><div class="big ${cls(v)}">${usd(v)}</div><div class="${cls(v)}" style="font-weight:800">${pc(roe)}</div></div></div>
     <div>${stratBadge(t)}${sideBadge(t.side)}${liveTag}${step}</div>
-    ${tc ? `<div class="small" style="margin-top:6px;color:var(--cyan)">Live price touched the entry at ${when(tc.at)}. The bot will confirm this at its next hourly check.</div>` : ""}
+    ${tc ? `<div class="small" style="margin-top:6px;color:var(--cyan)">Live price touched the entry at ${when(tc.at)}. The bot will confirm this at its next check.</div>` : ""}
     <div class="grid3"><div class="box"><div class="l">Entry</div><div class="v y">${fp(t.entry)}</div></div>
       <div class="box"><div class="l">Now</div><div class="v">${fp(p)}</div></div>
       <div class="box"><div class="l">Since</div><div class="v" style="font-size:13px">${when(tc ? tc.at : (t.filledAt || t.sent))}</div></div></div>
@@ -462,7 +462,7 @@ function listTab(kind) {
   const title = { ideas: "💡 Trade ideas", running: "🏃 Running trades", history: "📜 Finished and cancelled" }[kind];
   h += `<div class="sec">${title}</div>`;
   if (kind === "running" && arr.some(t => touched(t))) h += `<div class="small" style="margin:0 2px">⚡ “Entered (live)” = the live price touched the entry. The bot confirms at its hourly check.</div>`;
-  if (!arr.length) h += `<div class="card empty">${{ ideas: "No trade ideas right now. The bot checks every hour and only sends good ones.", running: "No running trades right now.", history: "Nothing here yet." }[kind]}</div>`;
+  if (!arr.length) h += `<div class="card empty">${{ ideas: "No trade ideas right now. The bot checks every 1.5 hours and only sends good ones.", running: "No running trades right now.", history: "Nothing here yet." }[kind]}</div>`;
   h += arr.map(kind === "ideas" ? ideaCard : kind === "running" ? runCard : histCard).join("");
   if (S.ledger) h += `<div class="small" style="margin:12px 2px">Ideas updated by the bot at ${when(S.ledger.updated)} · next check ${when(S.ledger.nextCheck)}</div>`;
   return h;
