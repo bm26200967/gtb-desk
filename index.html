@@ -495,7 +495,7 @@ function binanceTab() {
   if (!O.length) h += `<div class="card empty" style="padding:18px">No open orders.</div>`;
   else h += `<div class="card">` + O.map(o => `<div class="ord"><div><b>${esc(coinName(o.symbol))}</b> <span class="small">${esc(o.side === "BUY" ? "buy" : "sell")}</span><br><span class="small">${OT[o.type] || esc(o.type)}${o.bot ? " · 🤖 bot" : ""}</span></div>
      <div style="text-align:right"><b>${fp(o.stopPrice || o.price)}</b><br><span class="small">${o.closePosition ? "closes whole trade" : "qty " + fp(o.qty)}</span></div></div>`).join("") + `</div>`;
-  if (V.rules) h += `<div class="small" style="margin:10px 2px">Bot rules: ${esc(V.rules.margin_usdt)} USDT × ${esc(V.rules.leverage)} per trade · ${(+V.rules.reserve_usdt) > 0 ? "keep " + esc(V.rules.reserve_usdt) + " USDT free" : "no money kept aside (margin + fees must fit)"} · max ${esc(V.rules.max_open)} trades · daily stop −${esc(V.rules.daily_stop_usdt)} USDT${V.watcherBeat ? " · watcher checked " + when(V.watcherBeat) : ""}</div>`;
+  if (V.rules) h += `<div class="small" style="margin:10px 2px">Bot rules: ${esc(V.rules.margin_usdt)} USDT × ${esc(V.rules.leverage)} per trade · ${(+V.rules.reserve_usdt) > 0 ? "keep " + esc(V.rules.reserve_usdt) + " USDT free" : "kept aside 0 USDT (no reserve; margin + fees must fit)"} · real trades: MAIN, SECOND, ⭐ DAILY PICK · max ${esc(V.rules.max_open)} trades · daily stop −${esc(V.rules.daily_stop_usdt)} USDT${V.watcherBeat ? " · watcher checked " + when(V.watcherBeat) : ""}</div>`;
   h += `<div class="small" style="margin:6px 2px">For tapping buttons and closing trades, use the Binance app. This page only shows.</div>`;
   return h;
 }
