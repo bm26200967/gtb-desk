@@ -153,7 +153,7 @@ function stratBadge(t) { const s = strat(t);
   if (s === "second") return '<span class="badge b-second">⚡ SECOND</span>';
   return '<span class="badge b-main">' + ((num(t.score) || 0) >= 80 ? "🔥 MAIN" : "🔥 MAIN") + '</span>'; }
 const RT = { counter_trend: "Against the trend", meme_fomo: "Meme / hype coin", news_catalyst: "News move", breakout: "Breakout",
-  mean_reversion: "Snap-back", funding_squeeze: "Funding squeeze" };
+  mean_reversion: "Snap-back", funding_squeeze: "Funding squeeze", news_time: "📅 News-time" };
 function saveTouch() { localStorage.setItem("ld_touch_v1", JSON.stringify(S.touch)); localStorage.setItem("ld_ref_v1", JSON.stringify(S.ref)); }
 
 // ---------- live "entered" check for waiting ideas (client side, until the next bot check)
