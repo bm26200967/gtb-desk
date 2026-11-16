@@ -150,7 +150,7 @@ function sideBadge(side) { return side === "SHORT" ? '<span class="badge b-short
 function stratBadge(t) { const s = strat(t);
   const miss = !t.strategy ? '<span class="badge b-warn2">⚠️ NO STRATEGY · NOT REAL</span>' : "";
   if (miss) return miss + (s === "main" ? "" : stratBadge(Object.assign({}, t, { strategy: s })));
-  if (s === "daily") return '<span class="badge b-daily">⭐ DAILY PICK</span><span class="badge b-test">PRACTICE ONLY</span>';
+  if (s === "daily") return '<span class="badge b-daily">⭐ DAILY PICK</span><span class="badge b-live">💰 REAL MONEY</span>';
   if (s === "risky") return '<span class="badge b-risky">🎲 HIGH RISK</span><span class="badge b-test">TEST ONLY</span>';
   if (s === "slow") return '<span class="badge b-slow">🌊 SLOW MARKET</span><span class="badge b-test">PRACTICE ONLY</span>';
   if (s === "trend") return '<span class="badge b-trend">📈📉 TREND DIPS</span><span class="badge b-test">PRACTICE ONLY</span>';
@@ -330,7 +330,7 @@ function accCards() {
     for (const t of l.running) if (strat(t) === k) { const tc = touched(t); const p = tc && tc.hit ? (tc.hit === "tp" ? t.tp : t.sl) : priceOf(t.coin); const v = pnlAt(t, p); if (v != null) { open += v; n++; } }
     const bal = num(a.balance) != null ? a.balance : a.start, now = bal + open, w = a.wins || 0, ls = a.losses || 0, closed = w + ls + (a.even || 0);
     const wr = (w + ls) ? Math.round(w / (w + ls) * 100) + "%" + ((w + ls) < 10 ? " (early)" : "") : "no trades yet";
-    return `<div class="card" style="border-top:3px solid ${col}"><div class="t" style="color:${col}">${name}${k === "risky" || k === "slow" || k === "trend" || k === "daily" ? ' <span class="badge b-test" style="font-size:9px;padding:1px 4px">TEST</span>' : ""}</div>
+    return `<div class="card" style="border-top:3px solid ${col}"><div class="t" style="color:${col}">${name}${k === "risky" || k === "slow" || k === "trend" ? ' <span class="badge b-test" style="font-size:9px;padding:1px 4px">TEST</span>' : ""}</div>
       <div class="v">${plain(now)}</div><div class="s">start ${plain(a.start, 0)} USDT</div>
       <div class="s ${cls(open)}">${n ? "open " + usd(open) : "no open trades"}</div>
       <div class="s">✅ ${w} · ❌ ${ls} · win ${wr}</div></div>`;
@@ -390,8 +390,8 @@ function dailyBlock(t) {
   const bs = S.ledger && S.ledger.stats && S.ledger.stats.by_strategy && S.ledger.stats.by_strategy.daily;
   const wl = bs ? (bs.wins || 0) + (bs.losses || 0) : 0;
   const st = !wl ? "win rate: no finished trades yet" : wl < 10 ? `win rate so far ${Math.round(bs.wins / wl * 100)}% (only ${wl} trades, too early to trust)` : `win rate ${Math.round(bs.wins / wl * 100)}% from ${wl} trades`;
-  return `<div class="why">🧪 <b>Practice only.</b> Not placed on Binance. Please don't trade it with real money.</div>
-    <div class="why">⭐ <b>Best idea of the day</b> (no other section found one today, so the bot picked the best one that still passed a lower bar)${t.pickFrom ? " · " + esc(PICKFROM[t.pickFrom] || t.pickFrom) : ""} · ${st}</div>
+  return `<div class="why">💰 <b>Real money.</b> The bot places this on your Binance by itself (3 USDT × 10, or the coin's minimum), like MAIN and SECOND. One daily pick per day.</div>
+    <div class="why">⭐ <b>Best idea of the day</b> · ${t.copiedFrom ? "copied from today's best idea" : "no idea passed the normal rules today, so the bot took the best one that passed a lower bar"}${t.pickFrom ? " · " + esc(PICKFROM[t.pickFrom] || t.pickFrom) : ""} · ${st}</div>
     ${t.whyText ? `<div class="why">${esc(t.whyText)}</div>` : ""}
     ${ev.length ? `<details><summary>Why I think this (${ev.length} points)</summary><ul class="ev">${ev.map(x => `<li>${esc(typeof x === "string" ? x : (x.text || JSON.stringify(x)))}</li>`).join("")}</ul></details>` : ""}`;
 }
@@ -495,14 +495,14 @@ function binanceTab() {
   if (!O.length) h += `<div class="card empty" style="padding:18px">No open orders.</div>`;
   else h += `<div class="card">` + O.map(o => `<div class="ord"><div><b>${esc(coinName(o.symbol))}</b> <span class="small">${esc(o.side === "BUY" ? "buy" : "sell")}</span><br><span class="small">${OT[o.type] || esc(o.type)}${o.bot ? " · 🤖 bot" : ""}</span></div>
      <div style="text-align:right"><b>${fp(o.stopPrice || o.price)}</b><br><span class="small">${o.closePosition ? "closes whole trade" : "qty " + fp(o.qty)}</span></div></div>`).join("") + `</div>`;
-  if (V.rules) h += `<div class="small" style="margin:10px 2px">Bot rules: ${esc(V.rules.margin_usdt)} USDT × ${esc(V.rules.leverage)} per trade · keep ${esc(V.rules.reserve_usdt)} USDT free · max ${esc(V.rules.max_open)} trades · daily stop −${esc(V.rules.daily_stop_usdt)} USDT${V.watcherBeat ? " · watcher checked " + when(V.watcherBeat) : ""}</div>`;
+  if (V.rules) h += `<div class="small" style="margin:10px 2px">Bot rules: ${esc(V.rules.margin_usdt)} USDT × ${esc(V.rules.leverage)} per trade · ${(+V.rules.reserve_usdt) > 0 ? "keep " + esc(V.rules.reserve_usdt) + " USDT free" : "no money kept aside (margin + fees must fit)"} · max ${esc(V.rules.max_open)} trades · daily stop −${esc(V.rules.daily_stop_usdt)} USDT${V.watcherBeat ? " · watcher checked " + when(V.watcherBeat) : ""}</div>`;
   h += `<div class="small" style="margin:6px 2px">For tapping buttons and closing trades, use the Binance app. This page only shows.</div>`;
   return h;
 }
 function listTab(kind) {
   const l = lists(); let arr = kind === "ideas" ? l.ideas : kind === "running" ? l.running : l.hist;
   if (S.filt !== "all") arr = arr.filter(t => strat(t) === S.filt);
-  if (kind === "ideas") { const o = { main: 0, second: 1, risky: 2, slow: 3, trend: 4, daily: 5 }; arr = arr.slice().sort((a, b) => (o[strat(a)] - o[strat(b)]) || ((num(b.score) || 0) - (num(a.score) || 0))); }
+  if (kind === "ideas") { const o = { main: 0, second: 1, daily: 2, risky: 3, slow: 4, trend: 5 }; arr = arr.slice().sort((a, b) => (o[strat(a)] - o[strat(b)]) || ((num(b.score) || 0) - (num(a.score) || 0))); }
   let h = alertsBox() + accCards();
   const title = { ideas: "💡 Trade ideas", running: "🏃 Running trades", history: "📜 Finished and cancelled" }[kind];
   h += `<div class="sec">${title}</div>`;
