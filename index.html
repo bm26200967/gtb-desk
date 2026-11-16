@@ -35,13 +35,14 @@ main{padding:4px 12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
 .card.fire{border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(90deg,#c2410c,#f59e0b,#facc15) border-box}
 .card.risky{border:2px dashed #a855f7}
+.card.slow{border:2px dashed #2dd4bf}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .coin{font-size:20px;font-weight:800}
 .coin small{font-size:12px;color:var(--dim);font-weight:600}
 .badge{display:inline-block;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:800;margin:2px 4px 2px 0}
 .b-long{background:rgba(34,197,94,.15);color:var(--green)} .b-short{background:rgba(244,63,94,.15);color:var(--red)}
 .b-main{background:rgba(245,158,11,.18);color:var(--gold)} .b-second{background:rgba(96,165,250,.18);color:var(--blue)}
-.b-risky{background:rgba(192,132,252,.2);color:var(--purple)} .b-test{background:#7c3aed;color:#fff}
+.b-risky{background:rgba(192,132,252,.2);color:var(--purple)} .b-slow{background:rgba(45,212,191,.18);color:#2dd4bf} .b-test{background:#7c3aed;color:#fff}
 .b-live{background:rgba(34,211,238,.18);color:var(--cyan)} .b-dim{background:var(--card2);color:var(--dim)}
 .b-warn{background:rgba(250,204,21,.18);color:var(--yellow)}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
@@ -63,7 +64,7 @@ main{padding:4px 12px}
 .test{background:linear-gradient(135deg,#7c2d12,#a16207);color:#fff}
 .err{background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.4);color:#fde68a;font-weight:600}
 .alert{background:linear-gradient(135deg,#7f1d1d,#9f1239);color:#fff}
-.acc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.acc{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:8px 0}
 .acc .card{margin:0;padding:10px}
 .acc .t{font-size:12px;font-weight:800}
 .acc .v{font-size:17px;font-weight:900;margin:4px 0 2px}
@@ -146,6 +147,7 @@ function pnlAt(t, p, entry) { entry = num(entry != null ? entry : t.entry); p = 
 function sideBadge(side) { return side === "SHORT" ? '<span class="badge b-short">📉 SHORT · wins if price goes DOWN</span>' : '<span class="badge b-long">📈 LONG · wins if price goes UP</span>'; }
 function stratBadge(t) { const s = strat(t);
   if (s === "risky") return '<span class="badge b-risky">🎲 HIGH RISK</span><span class="badge b-test">TEST ONLY</span>';
+  if (s === "slow") return '<span class="badge b-slow">🌊 SLOW MARKET</span><span class="badge b-test">PRACTICE ONLY</span>';
   if (s === "second") return '<span class="badge b-second">⚡ SECOND</span>';
   return '<span class="badge b-main">' + ((num(t.score) || 0) >= 80 ? "🔥 MAIN" : "🔥 MAIN") + '</span>'; }
 const RT = { counter_trend: "Against the trend", meme_fomo: "Meme / hype coin", news_catalyst: "News move", breakout: "Breakout",
@@ -278,7 +280,7 @@ async function loadPrices() {
 
 // ---------- UI pieces
 const TABS = [["binance", "💰", "My Binance"], ["ideas", "💡", "Ideas"], ["running", "🏃", "Running"], ["history", "📜", "History"]];
-const FILTS = [["all", "All"], ["main", "🔥 Main"], ["second", "⚡ Second"], ["risky", "🎲 High risk"]];
+const FILTS = [["all", "All"], ["main", "🔥 Main"], ["second", "⚡ Second"], ["risky", "🎲 High risk"], ["slow", "🌊 Slow"]];
 function lists() {
   const T = (S.ledger && S.ledger.trades) || [];
   const ideas = T.filter(t => ACTIVE.includes(t.status) && !touched(t));
@@ -316,13 +318,13 @@ function statusPills() {
 function accCards() {
   const L = S.ledger; if (!L) return "";
   const A = L.accounts || {}; const l = lists();
-  const cfg = [["main", "🔥 Main", "var(--gold)"], ["second", "⚡ Second", "var(--blue)"], ["risky", "🎲 High risk", "var(--purple)"]];
+  const cfg = [["main", "🔥 Main", "var(--gold)"], ["second", "⚡ Second", "var(--blue)"], ["risky", "🎲 High risk", "var(--purple)"], ["slow", "🌊 Slow market", "#2dd4bf"]];
   return `<div class="sec">🎮 Practice money (not real)</div><div class="acc">` + cfg.map(([k, name, col]) => {
     const a = A[k] || { start: 1000, balance: 1000 }; let open = 0, n = 0;
     for (const t of l.running) if (strat(t) === k) { const tc = touched(t); const p = tc && tc.hit ? (tc.hit === "tp" ? t.tp : t.sl) : priceOf(t.coin); const v = pnlAt(t, p); if (v != null) { open += v; n++; } }
     const bal = num(a.balance) != null ? a.balance : a.start, now = bal + open, w = a.wins || 0, ls = a.losses || 0, closed = w + ls + (a.even || 0);
     const wr = (w + ls) ? Math.round(w / (w + ls) * 100) + "%" + ((w + ls) < 10 ? " (early)" : "") : "no trades yet";
-    return `<div class="card" style="border-top:3px solid ${col}"><div class="t" style="color:${col}">${name}${k === "risky" ? ' <span class="badge b-test" style="font-size:9px;padding:1px 4px">TEST</span>' : ""}</div>
+    return `<div class="card" style="border-top:3px solid ${col}"><div class="t" style="color:${col}">${name}${k === "risky" || k === "slow" ? ' <span class="badge b-test" style="font-size:9px;padding:1px 4px">TEST</span>' : ""}</div>
       <div class="v">${plain(now)}</div><div class="s">start ${plain(a.start, 0)} USDT</div>
       <div class="s ${cls(open)}">${n ? "open " + usd(open) : "no open trades"}</div>
       <div class="s">✅ ${w} · ❌ ${ls} · win ${wr}</div></div>`;
@@ -350,6 +352,18 @@ function riskyBlock(t) {
     ${ev.length ? `<details><summary>Why I think this (${ev.length} points)</summary><ul class="ev">${ev.map(x => `<li>${esc(typeof x === "string" ? x : (x.text || JSON.stringify(x)))}</li>`).join("")}</ul></details>` : ""}
     ${num(t.stretchTarget) != null ? `<div class="why">🚀 Stretch target (only if it runs far): <b>${fp(t.stretchTarget)}</b> → ${usd(pnlAt(t, t.stretchTarget))}</div>` : ""}`;
 }
+function slowBlock(t) {
+  if (strat(t) !== "slow") return "";
+  const ev = Array.isArray(t.evidence) ? t.evidence : []; const b = t.box || {};
+  const bs = S.ledger && S.ledger.stats && S.ledger.stats.by_strategy && S.ledger.stats.by_strategy.slow;
+  const wl = bs ? (bs.wins || 0) + (bs.losses || 0) : 0;
+  const st = !wl ? "win rate: no finished trades yet" : wl < 10 ? `win rate so far ${Math.round(bs.wins / wl * 100)}% (only ${wl} trades, too early to trust)` : `win rate ${Math.round(bs.wins / wl * 100)}% from ${wl} trades`;
+  return `<div class="why">🧪 <b>Practice only.</b> Not placed on Binance. Please don't trade it with real money.</div>
+    <div class="why">🌊 <b>${t.side === "SHORT" ? "Sell near the ceiling of a sideways price box" : "Buy near the floor of a sideways price box"}</b> · ${st}</div>
+    ${num(b.lo) != null && num(b.hi) != null ? `<div class="why">📦 Box: floor <b>${fp(b.lo)}</b> → ceiling <b>${fp(b.hi)}</b>${num(b.boxPct) != null ? " (" + b.boxPct + "% tall)" : ""}</div>` : ""}
+    ${t.whyText ? `<div class="why">${esc(t.whyText)}</div>` : ""}
+    ${ev.length ? `<details><summary>Why I think this (${ev.length} points)</summary><ul class="ev">${ev.map(x => `<li>${esc(typeof x === "string" ? x : (x.text || JSON.stringify(x)))}</li>`).join("")}</ul></details>` : ""}`;
+}
 function L_stats(type) {
   const b = S.ledger && S.ledger.stats && S.ledger.stats.by_risky_type && S.ledger.stats.by_risky_type[type];
   if (!b || !b.closed) return "win rate: no finished trades yet";
@@ -360,7 +374,7 @@ function ideaCard(t) {
   const p = priceOf(t.coin), e = num(t.entry); const dist = (p != null && e) ? (e - p) / p * 100 : null;
   const st = t.status === "paused" ? '<span class="badge b-warn">⏸️ Paused (big news)</span>' : t.status === "new" ? '<span class="badge b-live">🆕 New</span>' : '<span class="badge b-dim">⏳ Waiting for price</span>';
   const fire = strat(t) === "main" && (num(t.score) || 0) >= 80;
-  return `<div class="card ${fire ? "fire" : ""} ${strat(t) === "risky" ? "risky" : ""}">
+  return `<div class="card ${fire ? "fire" : ""} ${strat(t) === "risky" ? "risky" : strat(t) === "slow" ? "slow" : ""}">
     <div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div class="mid">${num(t.score) != null ? t.score : ""}<span class="small"> score</span></div></div>
     <div>${stratBadge(t)}${sideBadge(t.side)}${st}</div>
     <div class="grid3"><div class="box"><div class="l">Enter at</div><div class="v y">${fp(e)}</div></div>
@@ -371,7 +385,7 @@ function ideaCard(t) {
     ${levelsBar(t, p)}
     ${(t.chance || t.risk) ? `<div class="small" style="margin-top:8px">Chance: <b>${esc(t.chance || "—")}</b> · Risk: <b>${esc(t.risk || "—")}</b>${t.orderType ? " · " + esc(t.orderType) + " order" : ""}</div>` : ""}
     ${t.why && strat(t) !== "risky" ? `<div class="why">💬 ${esc(t.why)}</div>` : ""}
-    ${riskyBlock(t)}
+    ${riskyBlock(t)}${slowBlock(t)}
     <div class="small" style="margin-top:8px">Sent ${when(t.sent)}${t.expiresAt ? " · ends in " + left(t.expiresAt) : ""} · practice: 10 USDT × 10</div></div>`;
 }
 function runCard(t) {
@@ -383,7 +397,7 @@ function runCard(t) {
   if (tc) liveTag = tc.hit === "tp" ? '<span class="badge b-long">🎯 Target reached (live check)</span>' : tc.hit === "sl" ? '<span class="badge b-short">🛑 Stop loss hit (live check)</span>' : '<span class="badge b-live">⚡ Entered (live)</span>';
   else { const dir = t.side === "SHORT" ? -1 : 1; if (p != null && num(t.tp) != null && dir * (p - t.tp) >= 0) liveTag = '<span class="badge b-long">🎯 Price reached the target</span>';
     else if (p != null && num(t.sl) != null && dir * (p - t.sl) <= 0) liveTag = '<span class="badge b-short">🛑 Price reached the stop loss</span>'; }
-  return `<div class="card ${strat(t) === "risky" ? "risky" : ""}">
+  return `<div class="card ${strat(t) === "risky" ? "risky" : strat(t) === "slow" ? "slow" : ""}">
     <div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div style="text-align:right"><div class="big ${cls(v)}">${usd(v)}</div><div class="${cls(v)}" style="font-weight:800">${pc(roe)}</div></div></div>
     <div>${stratBadge(t)}${sideBadge(t.side)}${liveTag}${step}</div>
     ${tc ? `<div class="small" style="margin-top:6px;color:var(--cyan)">Live price touched the entry at ${when(tc.at)}. The bot will confirm this at its next check.</div>` : ""}
@@ -395,7 +409,7 @@ function runCard(t) {
     ${levelsBar(t, p)}
     ${t.note ? `<div class="why">👉 ${esc(t.note)}</div>` : ""}
     ${t.why && strat(t) !== "risky" ? `<details><summary>Why this trade</summary><div class="why">${esc(t.why)}</div></details>` : ""}
-    ${riskyBlock(t)}
+    ${riskyBlock(t)}${slowBlock(t)}
     <div class="small" style="margin-top:8px">Practice: 10 USDT × 10 · PnL updates with live prices</div></div>`;
 }
 const REASON = { tp: "🎯 Hit take profit", sl: "🛑 Hit stop loss", early: "✋ Closed early", breakeven: "🛡️ Closed at entry (no loss)", locked: "💰 Closed with locked profit" };
@@ -407,7 +421,7 @@ function histCard(t) {
   }
   let v = num(t.pnlUsdt); if (v == null && num(t.exitPrice) != null) v = pnlAt(t, t.exitPrice);
   const res = t.result === "win" ? "✅ Win" : t.result === "loss" ? "❌ Loss" : t.result === "even" ? "➖ Even" : (v > 0 ? "✅ Win" : v < 0 ? "❌ Loss" : "➖ Even");
-  return `<div class="card ${strat(t) === "risky" ? "risky" : ""}"><div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div class="mid ${cls(v)}">${usd(v)}</div></div>
+  return `<div class="card ${strat(t) === "risky" ? "risky" : strat(t) === "slow" ? "slow" : ""}"><div class="row"><div class="coin">${esc(coinName(t.coin))} <small>USDT</small></div><div class="mid ${cls(v)}">${usd(v)}</div></div>
     <div>${stratBadge(t)}${sideBadge(t.side)}<span class="badge b-dim">${res}</span></div>
     <div class="small" style="margin-top:6px">${REASON[t.closedReason] || esc(t.closedReason || "")}</div>
     <div class="grid3"><div class="box"><div class="l">Entry</div><div class="v">${fp(t.entry)}</div></div><div class="box"><div class="l">Exit</div><div class="v">${fp(t.exitPrice)}</div></div><div class="box"><div class="l">Closed</div><div class="v" style="font-size:13px">${when(t.closedAt)}</div></div></div>
@@ -457,7 +471,7 @@ function binanceTab() {
 function listTab(kind) {
   const l = lists(); let arr = kind === "ideas" ? l.ideas : kind === "running" ? l.running : l.hist;
   if (S.filt !== "all") arr = arr.filter(t => strat(t) === S.filt);
-  if (kind === "ideas") { const o = { main: 0, second: 1, risky: 2 }; arr = arr.slice().sort((a, b) => (o[strat(a)] - o[strat(b)]) || ((num(b.score) || 0) - (num(a.score) || 0))); }
+  if (kind === "ideas") { const o = { main: 0, second: 1, risky: 2, slow: 3 }; arr = arr.slice().sort((a, b) => (o[strat(a)] - o[strat(b)]) || ((num(b.score) || 0) - (num(a.score) || 0))); }
   let h = alertsBox() + accCards();
   const title = { ideas: "💡 Trade ideas", running: "🏃 Running trades", history: "📜 Finished and cancelled" }[kind];
   h += `<div class="sec">${title}</div>`;
