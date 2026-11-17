@@ -139,13 +139,32 @@ def _levels(t):
     try: return [float(t["entry"]), float(t["sl"]), float(t["tp"])]
     except Exception: return None
 
+def after_close(at_ms):
+    """THE one place that makes the 'After the close: still watching' fields (every close path uses it: stop mover, watcher, cloud guard copy)."""
+    return {"watching": True, "until": ms_iso(int(at_ms) + 7 * 86400000)}
+
+def ensure_after_close(ledger_path, now_ms=None):
+    """Safety net (Rasni 18 Nov): any CLOSED idea with no afterClose (e.g. closed by the AI check) whose 7-day watch window is still
+    open gets the standard fields from its close time. Read first, lock + save only when something is missing."""
+    now_ms = int(now_ms or time.time() * 1000)
+    def missing(L): return [t for t in L.get("trades", []) if t.get("status") == "closed" and not t.get("afterClose") and iso_ms(t.get("closedAt"))
+                            and iso_ms(t["closedAt"]) + 7 * 86400000 > now_ms]
+    try:
+        if not missing(_load(ledger_path)): return []
+        with Locked(ledger_path):
+            L = _load(ledger_path); fixed = []
+            for t in missing(L): t["afterClose"] = after_close(iso_ms(t["closedAt"])); fixed.append(t.get("id"))
+            if fixed: L["autoMoverAt"] = iso(); _save(L, ledger_path)
+        return [{"what": "afterClose added", "trade": k} for k in fixed]
+    except Exception as e: return [{"what": "afterClose check failed", "err": str(e)[:120]}]
+
 def _close_practice(L, t, ts, lvl, kind, o, now_ms, notes, k):
     reason = "tp" if kind == "tp" else sl_reason(t.get("stopStep"))
     nums = close_numbers(t, lvl, reason); at = ms_iso(min(o + 30000, now_ms))
     words = {"tp": "take profit hit", "sl": "stop loss hit", "breakeven": "no-loss stop hit", "locked": "keep-half stop hit"}[reason]
     fields = {"status": "closed", "closedAt": at, "exitPrice": lvl, "closedReason": reason, "result": nums["result"],
               "pnlUsdt": nums["pnlUsdt"], "r": nums["r"], "pnlNowUsdt": nums["pnlUsdt"], "autoClosed": True, "accounted": True,
-              "afterClose": {"watching": True, "until": ms_iso(o + 7 * 86400000)}}
+              "afterClose": after_close(o)}
     change = {"at": at, "kind": "other", "old": "running", "new": "closed",
               "reason": f"auto: {words} at {lvl} {TAG}: {nums['pnlUsdt']:+.2f} USDT after fees"}
     t.update(fields); t.setdefault("changes", []).append(change); _add_account(L, t, nums)
@@ -188,7 +207,7 @@ def run(ledger_path, state_path, real_open=None, info=None, now_ms=None, quiet=T
         with open(state_path) as fh: S = json.load(fh)
     except Exception: S = {}
     S.setdefault("trades", {})
-    notes = []
+    notes = ensure_after_close(ledger_path, now_ms)
     try: L0 = _load(ledger_path)
     except Exception as e: return [{"what": "ledger not readable", "err": str(e)}]
     # ---- 1. read candles OUTSIDE the lock (network), decide per trade
