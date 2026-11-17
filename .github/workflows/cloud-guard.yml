@@ -1,0 +1,33 @@
+# Free always-on cloud guard for PRACTICE trades (no AI, no Binance key). See guard/cloud_guard.py.
+name: cloud-guard
+on:
+  schedule:
+    - cron: "*/5 * * * *"        # GitHub's minimum; runs can start a few minutes late when GitHub is busy
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Test only: read, decrypt and check candles, write nothing"
+        type: boolean
+        default: true
+permissions:
+  contents: write                 # write guard_out / desk data on the 'data' branch
+  actions: write                  # keepalive: re-enable this workflow about weekly
+concurrency:
+  group: cloud-guard
+  cancel-in-progress: false       # never two runs at the same time; a late one waits
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: guard
+      - run: python3 -m pip install --quiet --disable-pip-version-check cryptography
+      - name: guard
+        env:
+          GUARD_KEY: ${{ secrets.GUARD_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GUARD_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.test && '1' || '' }}
+        run: python3 guard/cloud_guard.py
