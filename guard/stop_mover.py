@@ -34,7 +34,7 @@ import json, os, time, fcntl, datetime
 
 LK = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 FEE = 0.0005
-PRACTICE = ("risky", "slow", "trend")
+PRACTICE = ("risky", "slow", "trend", "own")   # v10 (21 Nov 2026): "own" = 🚀 THRUST RIDE (our own tested strategy, practice only)
 RANK = {"none": 0, "noloss": 1, "half": 2}
 TAG = "(free watcher)"
 
@@ -159,9 +159,10 @@ def ensure_after_close(ledger_path, now_ms=None):
     except Exception as e: return [{"what": "afterClose check failed", "err": str(e)[:120]}]
 
 def _close_practice(L, t, ts, lvl, kind, o, now_ms, notes, k):
-    reason = "tp" if kind == "tp" else sl_reason(t.get("stopStep"))
+    reason = "tp" if kind == "tp" else ("time" if kind == "time" else sl_reason(t.get("stopStep")))
     nums = close_numbers(t, lvl, reason); at = ms_iso(min(o + 30000, now_ms))
-    words = {"tp": "take profit hit", "sl": "stop loss hit", "breakeven": "no-loss stop hit", "locked": "keep-half stop hit"}[reason]
+    words = {"tp": "take profit hit", "sl": "stop loss hit", "breakeven": "no-loss stop hit", "locked": "keep-half stop hit",
+             "time": "time limit reached (maxHoldUntil), closed at the price then"}[reason]
     fields = {"status": "closed", "closedAt": at, "exitPrice": lvl, "closedReason": reason, "result": nums["result"],
               "pnlUsdt": nums["pnlUsdt"], "r": nums["r"], "pnlNowUsdt": nums["pnlUsdt"], "autoClosed": True, "accounted": True,
               "afterClose": after_close(o)}
@@ -318,8 +319,11 @@ def run(ledger_path, state_path, real_open=None, info=None, now_ms=None, quiet=T
                 ts["slSeen"] = sl
             hits_from = int(ts.get("hitsFrom") or K[0][0])
             best = ts.get("best"); worst = ts.get("worst"); hit = None
+            hold_ms = iso_ms(t.get("maxHoldUntil")) if practice and t.get("maxHoldUntil") else None   # v10: practice time exit
             for x in K:
                 o, hi, lo, cl = int(x[0]), float(x[2]), float(x[3]), float(x[4])
+                if practice and hold_ms and o >= hold_ms and o >= hits_from and hit is None:
+                    hit = ("time", float(x[1]), o); break        # first 1m candle at/after the time limit: close at its open
                 if practice and o >= hits_from and hit is None:
                     sl_hit = lo <= sl if long_ else hi >= sl; tp_hit = hi >= tp if long_ else lo <= tp
                     if sl_hit: hit = ("sl", sl, o)
