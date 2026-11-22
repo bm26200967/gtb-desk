@@ -66,7 +66,7 @@ details summary{cursor:pointer;font-weight:800;color:var(--sub)}
     <div style="display:flex;gap:6px"><a class="btn" href="../">← Main desk</a><button class="btn" id="themeBtn">🌙</button><button class="btn" id="lockBtn">🔒</button></div>
   </div>
   <div class="pills" id="pills"></div>
-  <div class="tabs"><div class="tab" data-t="practice">🧪 Practice</div><div class="tab" data-t="real">💰 Real</div></div>
+  <div class="tabs"><div class="tab" data-t="practice">🧪 Practice</div><div class="tab" data-t="real">💰 Real</div><div class="tab" data-t="svw">⚖️ Strong vs Weak</div></div>
   <div id="view"><div class="empty">Loading your desk…</div></div>
 </div>
 <script>
@@ -78,7 +78,7 @@ const SRC_RAW = "https://raw.githubusercontent.com/" + REPO + "/data/thrust.enc.
 const FEE = 0.0005, TZ = "Asia/Colombo";
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const ub64 = a => btoa(String.fromCharCode(...new Uint8Array(a)));
-let KEY = null, ENV = null, DATA = null, SHOWN = "", TAB = (location.hash || "#practice").slice(1) === "real" ? "real" : "practice";
+let KEY = null, ENV = null, DATA = null, SHOWN = "", TAB = ({ real: "real", svw: "svw" })[(location.hash || "#practice").slice(1)] || "practice";
 let PX = {}, PREV = {}, pollMs = 30000, apiBlockedUntil = 0, src = "";
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const tms = s => { const t = Date.parse(s || ""); return isNaN(t) ? 0 : t; };
@@ -147,6 +147,9 @@ async function prices() {
   if (!DATA || document.hidden) return;
   const syms = new Set(); (DATA.practice.open || []).forEach(t => syms.add(t.coin)); (DATA.real.positions || []).forEach(p => syms.add(p.symbol));
   await Promise.all([...syms].map(async s => { try { const r = await fetch("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=" + s, { cache: "no-store", referrerPolicy: "no-referrer" }); if (r.ok) { const j = await r.json(); PREV[s] = PX[s]; PX[s] = +j.markPrice; } } catch (e) { } }));
+  if (TAB === "svw" && DATA.svw && (DATA.svw.legs || []).length) {             // ⚖️ 20 legs: one call for all coins
+    try { const r = await fetch("https://fapi.binance.com/fapi/v1/premiumIndex", { cache: "no-store", referrerPolicy: "no-referrer" }); if (r.ok) { const want = new Set(DATA.svw.legs.map(l => l.symbol)); (await r.json()).forEach(j => { if (want.has(j.symbol)) { PREV[j.symbol] = PX[j.symbol]; PX[j.symbol] = +j.markPrice; } }); render(true); } } catch (e) { }
+  }
   if (syms.size) render(true);
 }
 // ---------------- pieces
@@ -232,11 +235,36 @@ function real() {
   <div class="card"><h2>📜 Real Thrust Ride history</h2><div class="grid" style="margin-bottom:6px"><div class="box"><div class="l">Closed</div><div class="v">${S.trades || 0}</div></div><div class="box"><div class="l">Win rate</div><div class="v">${S.winRate == null ? "—" : S.winRate + "%"}</div></div><div class="box"><div class="l">Total after fees</div><div class="v ${cls(S.totalPnl)}">${usd(S.totalPnl || 0)}</div></div></div><div class="list">${hist || '<div class="empty">No closed real Thrust Ride trades yet.</div>'}</div></div>
   ${sk ? `<div class="card"><h2>⏭️ Signals not copied to Binance</h2><div class="list">${sk}</div></div>` : ""}`;
 }
+// ---------------- ⚖️ strongest vs weakest (PRACTICE only)
+function svw() {
+  const V = DATA.svw;
+  const intro = `<div class="status off" style="background:color-mix(in srgb,var(--violet) 14%,var(--card));border-color:color-mix(in srgb,var(--violet) 50%,transparent)">⚖️ Strongest vs Weakest · PRACTICE ONLY. Every 3 days it buys the 10 coins that went up most in the last 3 days and sells (shorts) the 10 that fell most. Never real money.</div>`;
+  if (!V) return intro + '<div class="card"><div class="empty">Starting up… the first data comes within a few minutes.</div></div>';
+  const a = V.account || {}, legs = V.legs || [];
+  let openSum = 0; const pnl = l => { const p = PX[l.symbol]; if (!p) return null; return l.side * l.qty * (p - l.entry) - (l.feeIn || 0) - (l.funding || 0); };
+  legs.forEach(l => { const v = pnl(l); if (v !== null) openSum += v; });
+  const eq = (+a.balance || 1000) + openSum, start = +a.start || 1000, w = +a.wins || 0, ls = +a.losses || 0;
+  const row = l => { const v = pnl(l), lg = l.side > 0;
+    return `<div class="it"><div><b>${esc(coin(l.symbol))}</b> <span class="pill ${lg ? "g" : "r"}">${lg ? "⬆ LONG" : "⬇ SHORT"}</span><div class="small">3-day move ${l.score > 0 ? "+" : ""}${esc(l.score)}% · entry ${fp(l.entry)} · now ${priceSpan(l.symbol)} · liquidation ${fp(l.liq)}</div></div><div class="num ${cls(v)}" style="font-weight:900;text-align:right">${v === null ? "…" : usd(v)}</div></div>`; };
+  const longs = legs.filter(l => l.side > 0).sort((x, y) => y.score - x.score), shorts = legs.filter(l => l.side < 0).sort((x, y) => x.score - y.score);
+  const pv = V.preview;
+  const preview = !legs.length && pv ? `<div class="card"><h2>👀 If it picked now (${esc(when(pv.at))})</h2><div class="small"><b class="pos">Would buy:</b> ${pv.long.map(s => esc(coin(s)) + " " + (pv.scores[s] > 0 ? "+" : "") + pv.scores[s] + "%").join(", ")}</div><div class="small" style="margin-top:6px"><b class="neg">Would sell:</b> ${pv.short.map(s => esc(coin(s)) + " " + pv.scores[s] + "%").join(", ")}</div><div class="small" style="margin-top:6px">From ${pv.eligible} coins (listed 30+ days, 5M+ USDT traded in 24 h). The real picks are made at the next rotation.</div></div>` : "";
+  const closed = (V.closed || []).slice().reverse().map(c => `<div class="it"><div><b>${c.result === "win" ? "✅" : c.result === "loss" ? "❌" : "➖"} ${esc(coin(c.symbol))}</b> <span class="small">${c.side > 0 ? "LONG" : "SHORT"} · ${c.why === "liquidated" ? "💥 liquidated (lost its 10 USDT margin)" : c.why === "rotation" ? "🔄 swapped out at rotation" : esc(c.why)}</span><div class="small">${fp(c.entry)} → ${fp(c.exit)} · ${esc(when(c.closedAt))}</div></div><div class="num ${cls(c.pnl)}" style="font-weight:900">${usd(c.pnl)}</div></div>`).join("");
+  return intro + `<div class="card"><h2>⚖️ Practice account</h2><div class="big num">${eq.toFixed(2)} <span style="font-size:16px">USDT</span></div><div class="small">started with ${start} · <span class="${cls(eq - start)}">${usd(eq - start)}</span> · closed legs ${usd((+a.balance || start) - start)} · open legs now <span class="${cls(openSum)}">${usd(openSum)}</span></div>
+   <div class="grid" style="margin-top:10px"><div class="box"><div class="l">🔄 Next rotation</div><div class="v" style="font-size:15px">${esc(when(V.nextRotationAt))}<br><span class="small">${esc(left(V.nextRotationAt).replace(" left", " to go"))}</span></div></div>
+   <div class="box"><div class="l">Open legs</div><div class="v">${legs.length} / 20</div></div><div class="box"><div class="l">Closed legs won / lost</div><div class="v"><span class="pos">${w}</span> / <span class="neg">${ls}</span></div></div>
+   <div class="box"><div class="l">Fees + funding paid</div><div class="v">${((+a.fees || 0) + (+a.funding || 0)).toFixed(2)}</div></div></div>
+   <div class="small" style="margin-top:10px">Each leg: 10 USDT × 10 practice (100 USDT position). No stop loss or take profit: legs are only swapped every 3 days at 12:30 AM. A leg is liquidated if the price moves 9.5% against it. Fees, slippage and funding are counted.</div></div>
+  ${preview}
+  <div class="card"><h2>⬆ Strongest (LONG)</h2><div class="list">${longs.map(row).join("") || '<div class="empty">No legs yet. The first picks are made at the next rotation.</div>'}</div></div>
+  <div class="card"><h2>⬇ Weakest (SHORT)</h2><div class="list">${shorts.map(row).join("") || '<div class="empty">No legs yet.</div>'}</div></div>
+  <div class="card"><h2>📜 Closed legs</h2><div class="list">${closed || '<div class="empty">No closed legs yet.</div>'}</div></div>`;
+}
 let lastHtml = "";
 function render(soft) {
   if (!DATA) return; pills();
   document.querySelectorAll(".tab").forEach(el => el.classList.toggle("on", el.dataset.t === TAB));
-  const h = TAB === "real" ? real() : practice();
+  const h = TAB === "real" ? real() : TAB === "svw" ? svw() : practice();
   if (h !== lastHtml) { const y = window.scrollY; $("view").innerHTML = h; lastHtml = h; if (soft) window.scrollTo(0, y); }
 }
 loadData(true);
