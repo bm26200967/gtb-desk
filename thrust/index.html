@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://fapi.binance.com https://api.github.com https://raw.githubusercontent.com; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<meta name="theme-color" content="#0A0C11">
+<link rel="icon" href="data:,">
+<title>🚀 Thrust Ride Desk</title>
+<style>
+:root{--bg:#0A0C11;--card:#141821;--card2:#1B202B;--line:#2A303C;--text:#F1F3F8;--sub:#AEB6C6;--dim:#7D8699;--green:#22C55E;--red:#F43F5E;--amber:#F59E0B;--blue:#38BDF8;--violet:#A78BFA}
+body[data-theme=light]{--bg:#EEF1F6;--card:#FFFFFF;--card2:#F4F6FA;--line:#D7DDE8;--text:#111826;--sub:#465065;--dim:#6B7487;--green:#15803D;--red:#BE123C;--amber:#B45309;--blue:#0369A1;--violet:#6D28D9}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;-webkit-text-size-adjust:100%;font-size:16px;line-height:1.4}
+.wrap{max-width:760px;margin:0 auto;padding:12px 12px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+h1{font-size:22px;margin:4px 0;font-weight:900;letter-spacing:.2px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--sub)}
+.pill.g{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent)}.pill.r{color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)}
+.pill.a{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 45%,transparent)}.pill.b{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 45%,transparent)}
+.tabs{display:flex;gap:8px;margin:10px 0 12px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:5}
+.tab{flex:1;text-align:center;padding:12px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card);font-weight:900;font-size:16px;cursor:pointer;color:var(--sub)}
+.tab.on{color:var(--text);border-color:var(--blue);background:color-mix(in srgb,var(--blue) 16%,var(--card))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 12px}
+.card h2{font-size:15px;margin:0 0 8px;color:var(--sub);font-weight:800;letter-spacing:.3px;text-transform:uppercase}
+.big{font-size:30px;font-weight:900}.num{font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.box{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.box .l{font-size:12px;color:var(--dim);font-weight:700}.box .v{font-size:18px;font-weight:900;margin-top:2px}
+.pos{color:var(--green)}.neg{color:var(--red)}.mut{color:var(--dim)}.small{font-size:13px;color:var(--sub)}
+.trade{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px;background:var(--card2)}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.coin{font-size:20px;font-weight:900}.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.bar{position:relative;height:10px;border-radius:99px;margin:22px 4px 26px;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 55%,transparent),color-mix(in srgb,var(--sub) 25%,transparent) var(--e),color-mix(in srgb,var(--green) 55%,transparent))}
+.bar .mk{position:absolute;top:-4px;width:2px;height:18px;background:var(--text);opacity:.6}
+.bar .lb{position:absolute;top:18px;transform:translateX(-50%);font-size:11px;color:var(--sub);white-space:nowrap;font-weight:700}
+.bar .dot{position:absolute;top:-5px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue);border:2px solid var(--card)}
+.list .it{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--line)}.list .it:first-child{border-top:0}
+.flash-up{animation:fu 1s}.flash-dn{animation:fd 1s}@keyframes fu{from{color:var(--green)}}@keyframes fd{from{color:var(--red)}}
+svg{display:block;width:100%;height:160px}
+.empty{padding:14px;text-align:center;color:var(--dim);font-size:14px}
+.status{border-radius:16px;padding:14px;font-weight:800;font-size:16px;margin-bottom:12px;border:1px solid var(--line)}
+.status.on{background:color-mix(in srgb,var(--green) 14%,var(--card));border-color:color-mix(in srgb,var(--green) 50%,transparent)}
+.status.off{background:color-mix(in srgb,var(--amber) 14%,var(--card));border-color:color-mix(in srgb,var(--amber) 50%,transparent)}
+#lock{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+#lock .in{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;text-align:center}
+#lock input[type=password]{width:100%;font-size:22px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);text-align:center;letter-spacing:4px;margin:14px 0 10px}
+#lock button{width:100%;font-size:17px;font-weight:800;padding:12px;border:0;border-radius:12px;background:linear-gradient(135deg,#0284c7,#7c3aed);color:#fff}
+#lockMsg{min-height:20px;margin-top:10px;font-size:14px;font-weight:600}
+details summary{cursor:pointer;font-weight:800;color:var(--sub)}
+</style>
+</head>
+<body>
+<div id="lock"><div class="in"><div style="font-size:40px">🔐</div><div style="font-size:20px;font-weight:800;margin-top:6px">🚀 Thrust Ride Desk</div>
+<div class="small" style="margin-top:6px">Type the same PIN as your main desk.</div>
+<form id="lockForm" autocomplete="off"><input id="pin" type="password" autocomplete="current-password" placeholder="PIN" aria-label="PIN">
+<label class="small"><input id="remember" type="checkbox" checked> Remember on this phone</label>
+<button id="unlockBtn" type="submit">Open</button></form><div id="lockMsg"></div></div></div>
+<div class="wrap">
+  <div class="top">
+    <h1>🚀 Thrust Ride Desk</h1>
+    <div style="display:flex;gap:6px"><a class="btn" href="../">← Main desk</a><button class="btn" id="themeBtn">🌙</button><button class="btn" id="lockBtn">🔒</button></div>
+  </div>
+  <div class="pills" id="pills"></div>
+  <div class="tabs"><div class="tab" data-t="practice">🧪 Practice</div><div class="tab" data-t="real">💰 Real</div></div>
+  <div id="view"><div class="empty">Loading your desk…</div></div>
+</div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REPO = "bm26200967/gtb-desk";
+const SRC_API = "https://api.github.com/repos/" + REPO + "/contents/thrust.enc.json?ref=data";
+const SRC_RAW = "https://raw.githubusercontent.com/" + REPO + "/data/thrust.enc.json";
+const FEE = 0.0005, TZ = "Asia/Colombo";
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const ub64 = a => btoa(String.fromCharCode(...new Uint8Array(a)));
+let KEY = null, ENV = null, DATA = null, SHOWN = "", TAB = (location.hash || "#practice").slice(1) === "real" ? "real" : "practice";
+let PX = {}, PREV = {}, pollMs = 30000, apiBlockedUntil = 0, src = "";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const tms = s => { const t = Date.parse(s || ""); return isNaN(t) ? 0 : t; };
+const coin = s => String(s || "").replace(/USDT$/, "");
+function fp(x) { x = Number(x); if (!isFinite(x)) return "—"; const a = Math.abs(x); const d = a >= 1000 ? 2 : a >= 10 ? 3 : a >= 1 ? 4 : a >= 0.01 ? 5 : 7; return x.toFixed(d).replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, ""); }
+function usd(x, sign = true) { x = Number(x); if (!isFinite(x)) return "—"; return (sign && x > 0 ? "+" : "") + x.toFixed(2) + " USDT"; }
+const cls = x => Number(x) > 0.004 ? "pos" : Number(x) < -0.004 ? "neg" : "mut";
+function when(s) { const t = tms(s); if (!t) return "—"; return new Date(t).toLocaleString("en-GB", { timeZone: TZ, day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true }); }
+function ago(s) { const t = tms(s); if (!t) return "never"; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.floor(m / 60) + " h " + (m % 60) + " min ago" : Math.floor(m / 1440) + " days ago"; }
+function left(s) { const t = tms(s) - Date.now(); if (!tms(s)) return "—"; if (t <= 0) return "time is up, closing"; const h = Math.floor(t / 3600000), m = Math.floor(t % 3600000 / 60000); return h + " h " + m + " min left"; }
+const money = (qty, e, x) => (x - e) * qty - FEE * qty * (e + x);           // LONG, after 0.05% fee per side
+const REASON = { tp: "🎯 hit the take profit", sl: "🛑 hit the stop loss", breakeven: "🛡️ closed at the no-loss stop", locked: "🔒 closed with locked profit", time: "⏰ 48 hours passed, closed at the price then", early: "closed early", manual: "closed by hand" };
+// ---------------- theme
+function paint() { const t = localStorage.getItem("thr_theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"); document.body.dataset.theme = t; $("themeBtn").textContent = t === "light" ? "🌙" : "☀️"; document.querySelector('meta[name=theme-color]').content = t === "light" ? "#EEF1F6" : "#0A0C11"; }
+$("themeBtn").onclick = () => { localStorage.setItem("thr_theme", document.body.dataset.theme === "light" ? "dark" : "light"); paint(); };
+paint();
+// ---------------- tabs
+document.querySelectorAll(".tab").forEach(el => el.onclick = () => { TAB = el.dataset.t; history.replaceState(null, "", "#" + TAB); render(); window.scrollTo(0, 0); });
+// ---------------- crypto (same scheme + same saved key as the main desk)
+async function derive(pin, env) { const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveBits"]); const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64(env.salt), iterations: env.iter }, base, 256); return { raw: bits, salt: env.salt, iter: env.iter }; }
+async function openEnv(env, k) { const key = await crypto.subtle.importKey("raw", k.raw, "AES-GCM", false, ["decrypt"]); const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(env.iv), additionalData: new TextEncoder().encode(env.aad || "") }, key, b64(env.ct)); const ds = new Blob([plain]).stream().pipeThrough(new DecompressionStream("deflate")); return JSON.parse(await new Response(ds).text()); }
+function savedKey() { try { const k = JSON.parse(localStorage.getItem("gtb_key_v1") || "null"); return k ? { raw: b64(k.raw).buffer, salt: k.salt, iter: k.iter } : null; } catch (e) { return null; } }
+function showLock(msg) { $("lock").style.display = "flex"; $("lockMsg").innerHTML = msg || ""; setTimeout(() => $("pin").focus(), 50); }
+async function fetchEnv() {
+  if (Date.now() > apiBlockedUntil) {
+    try {
+      const c = new AbortController(); const tm = setTimeout(() => c.abort(), 10000);
+      const r = await fetch(SRC_API, { cache: "no-cache", headers: { Accept: "application/vnd.github.raw+json" }, signal: c.signal, referrerPolicy: "no-referrer" }); clearTimeout(tm);
+      const rem = r.headers.get("x-ratelimit-remaining"); if (rem !== null) pollMs = +rem > 30 ? 30000 : +rem > 12 ? 60000 : 120000;
+      if (r.ok) { src = "GitHub"; return await r.json(); }
+      if (r.status === 403 || r.status === 429) { const reset = +r.headers.get("x-ratelimit-reset"); apiBlockedUntil = reset ? reset * 1000 : Date.now() + 15 * 60e3; }
+    } catch (e) { }
+  }
+  const r = await fetch(SRC_RAW + "?t=" + Math.floor(Date.now() / 30000), { cache: "no-store", referrerPolicy: "no-referrer" });
+  if (!r.ok) throw new Error("HTTP " + r.status); src = "GitHub (slow copy)"; pollMs = 60000; return await r.json();
+}
+async function useEnv(env) {
+  if (!KEY || KEY.salt !== env.salt || KEY.iter !== env.iter) { KEY = savedKey(); if (KEY && (KEY.salt !== env.salt || KEY.iter !== env.iter)) KEY = null; }
+  if (!KEY) { showLock(); return; }
+  try { if (env.ct !== SHOWN) { DATA = await openEnv(env, KEY); SHOWN = env.ct; } }
+  catch (e) { KEY = null; localStorage.removeItem("gtb_key_v1"); showLock("Your PIN changed. Please type it again."); return; }
+  $("lock").style.display = "none"; DATA._at = tms(env.at || DATA.updatedAt); render(); prices();
+}
+let dataErr = null;
+async function loadData(force) {
+  if (document.hidden && DATA && !force) return;
+  try { ENV = await fetchEnv(); dataErr = null; await useEnv(ENV); }
+  catch (e) { dataErr = "Can't reach GitHub right now"; if (!DATA) $("view").innerHTML = '<div class="empty">Can\'t reach GitHub right now. Check your internet.</div>'; else pills(); }
+}
+document.addEventListener("submit", async ev => {
+  if (ev.target.id !== "lockForm") return; ev.preventDefault();
+  const pin = $("pin").value; if (!pin) return;
+  $("unlockBtn").disabled = true; $("lockMsg").innerHTML = '<span class="mut">Checking… (a few seconds the first time)</span>';
+  try {
+    if (!ENV) ENV = await fetchEnv();
+    const k = await derive(pin, ENV);
+    try { await openEnv(ENV, k); } catch (e) { $("lockMsg").innerHTML = '<span class="neg">❌ Wrong PIN. Please try again.</span>'; $("unlockBtn").disabled = false; return; }
+    KEY = k; if ($("remember").checked) localStorage.setItem("gtb_key_v1", JSON.stringify({ raw: ub64(k.raw), salt: k.salt, iter: k.iter }));
+    $("pin").value = ""; SHOWN = ""; await useEnv(ENV);
+  } catch (e) { $("lockMsg").innerHTML = '<span class="neg">Can\'t reach GitHub right now. Try again.</span>'; }
+  $("unlockBtn").disabled = false;
+});
+$("lockBtn").onclick = () => { KEY = null; DATA = null; SHOWN = ""; localStorage.removeItem("gtb_key_v1"); $("view").innerHTML = ""; showLock("Locked. Type your PIN to open again."); };
+// ---------------- live prices (public Binance, no key)
+async function prices() {
+  if (!DATA || document.hidden) return;
+  const syms = new Set(); (DATA.practice.open || []).forEach(t => syms.add(t.coin)); (DATA.real.positions || []).forEach(p => syms.add(p.symbol));
+  await Promise.all([...syms].map(async s => { try { const r = await fetch("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=" + s, { cache: "no-store", referrerPolicy: "no-referrer" }); if (r.ok) { const j = await r.json(); PREV[s] = PX[s]; PX[s] = +j.markPrice; } } catch (e) { } }));
+  if (syms.size) render(true);
+}
+// ---------------- pieces
+function pills() {
+  const d = DATA; if (!d) return; const age = (Date.now() - (d._at || 0)) / 60000; const p = [];
+  p.push(`<span class="pill ${age < 35 ? "g" : "a"}">📡 Data ${esc(ago(new Date(d._at).toISOString()))}</span>`);
+  p.push(`<span class="pill ${d.watcherOk ? "g" : "r"}">${d.watcherOk ? "🟢 Bot running" : "🔴 Bot asleep"}</span>`);
+  p.push(`<span class="pill ${d.real.enabled && !d.real.dryRun && !d.real.stopFile ? "g" : "a"}">💰 Real ${d.real.enabled && !d.real.dryRun && !d.real.stopFile ? "ON" : "OFF"}</span>`);
+  p.push(`<span class="pill b">🔎 Last scan ${esc(ago(d.scanner.at))}</span>`);
+  if (dataErr) p.push(`<span class="pill r">${esc(dataErr)}</span>`);
+  $("pills").innerHTML = p.join("");
+}
+function bar(t, px, sl) {
+  const lo = Math.min(sl, t.entry, px || sl), hi = Math.max(t.tp, px || t.tp), span = hi - lo || 1, pc = x => Math.max(0, Math.min(100, (x - lo) / span * 100));
+  const os = t.orig && t.orig.sl && t.orig.sl !== sl ? `<div class="mk" style="left:${pc(t.orig.sl)}%;opacity:.25"></div>` : "";
+  return `<div class="bar" style="--e:${pc(t.entry)}%">${os}<div class="mk" style="left:${pc(sl)}%"></div><div class="lb" style="left:${Math.max(8, pc(sl))}%">SL ${fp(sl)}</div>
+   <div class="mk" style="left:${pc(t.entry)}%"></div><div class="lb" style="left:${pc(t.entry)}%;top:-20px">Entry ${fp(t.entry)}</div>
+   <div class="mk" style="left:${pc(t.tp)}%"></div><div class="lb" style="left:${Math.min(92, pc(t.tp))}%">TP ${fp(t.tp)}</div>${px ? `<div class="dot" style="left:${pc(px)}%"></div>` : ""}</div>`;
+}
+function stepBadge(st) { return st === "noloss" ? '<span class="pill g">🛡️ No-loss stop (moved by the bot)</span>' : st === "half" ? '<span class="pill g">🔒 Keep-half stop (moved by the bot)</span>' : ""; }
+function priceSpan(s) { const p = PX[s], q = PREV[s]; const c = p && q ? (p > q ? "flash-up" : p < q ? "flash-dn" : "") : ""; return `<span class="num ${c}">${p ? fp(p) : "…"}</span>${p && q && p !== q ? (p > q ? " ▲" : " ▼") : ""}`; }
+function curve(pts) {
+  if (!pts || pts.length < 2) return '<div class="empty">The balance line starts after the first closed trade.</div>';
+  const v = pts.map(p => p[1]), mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1, W = 600, H = 160;
+  const xy = v.map((y, i) => [i / (v.length - 1) * W, H - 10 - (y - mn) / r * (H - 20)]);
+  const col = v[v.length - 1] >= v[0] ? "var(--green)" : "var(--red)";
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline fill="none" stroke="${col}" stroke-width="3" points="${xy.map(p => p.map(n => n.toFixed(1)).join(",")).join(" ")}"/></svg><div class="trow small"><span>low ${mn.toFixed(2)}</span><span>high ${mx.toFixed(2)}</span></div>`;
+}
+// ---------------- practice tab
+function practice() {
+  const P = DATA.practice, a = P.account || {}, start = +a.start || 1000, bal = +a.balance || start;
+  const w = +a.wins || 0, l = +a.losses || 0, wr = w + l ? Math.round(w / (w + l) * 100) + "%" : "—";
+  let openSum = 0;
+  const cards = (P.open || []).map(t => {
+    const px = PX[t.coin], sl = +t.sl, now = px ? money(t.qty, t.entry, px) : null; if (now !== null) openSum += now;
+    return `<div class="trade"><div class="trow"><span class="coin">${esc(coin(t.coin))} <span class="pill g">⬆ LONG</span></span><span class="small">opened ${esc(when(t.filledAt || t.time))}</span></div>
+    <div class="trow" style="margin-top:6px"><span class="small">Price now ${priceSpan(t.coin)}</span><span class="big num ${cls(now)}" style="font-size:24px">${now === null ? "…" : usd(now)}</span></div>
+    ${bar(t, px, sl)}
+    <div class="grid"><div class="box"><div class="l">If stop loss hits</div><div class="v ${cls(money(t.qty, t.entry, sl))}">${usd(money(t.qty, t.entry, sl))}</div></div>
+    <div class="box"><div class="l">If take profit hits</div><div class="v pos">${usd(money(t.qty, t.entry, +t.tp))}</div></div>
+    <div class="box"><div class="l">⏰ 48 h time limit</div><div class="v" style="font-size:15px">${esc(left(t.maxHoldUntil))}</div></div></div>
+    <div class="badges"><span class="pill">10 USDT × 10 practice</span>${stepBadge(t.stopStep)}${t.thrust ? `<span class="pill b">jump ${esc(t.thrust.movePct)}% · ${esc(t.thrust.z)}× normal · buyers ${esc(t.thrust.buyersPct)}%</span>` : ""}</div></div>`;
+  }).join("");
+  const closed = (P.closed || []).slice().reverse().map(t => `<div class="it"><div><b>${t.result === "win" ? "✅" : t.result === "loss" ? "❌" : "➖"} ${esc(coin(t.coin))}</b> <span class="small">${esc(REASON[t.closedReason] || t.closedReason || "")}</span><div class="small">${fp(t.entry)} → ${fp(t.exitPrice)} · ${esc(when(t.closedAt))}</div></div><div class="num ${cls(t.pnlUsdt)}" style="font-weight:900">${usd(t.pnlUsdt)}</div></div>`).join("");
+  return `<div class="card"><h2>🧪 Practice account</h2><div class="trow"><div><div class="big num">${bal.toFixed(2)} <span style="font-size:16px">USDT</span></div><div class="small">started with ${start} · <span class="${cls(bal - start)}">${usd(bal - start)}</span>${openSum ? ` · open trades now <span class="${cls(openSum)}">${usd(openSum)}</span>` : ""}</div></div></div>
+   <div class="grid" style="margin-top:10px"><div class="box"><div class="l">Win rate</div><div class="v">${wr}</div></div><div class="box"><div class="l">Closed trades</div><div class="v">${+a.closed || 0}</div></div>
+   <div class="box"><div class="l">Won / lost</div><div class="v"><span class="pos">${w}</span> / <span class="neg">${l}</span></div></div><div class="box"><div class="l">Open now</div><div class="v">${(P.open || []).length} / 6</div></div></div></div>
+  <div class="card"><h2>📈 Balance line</h2>${curve(P.curve)}</div>
+  <div class="card"><h2>🏃 Running practice trades</h2>${cards || '<div class="empty">No practice trade right now. The bot checks every coin each hour and opens one only after a big jump made by real buyers.</div>'}</div>
+  <div class="card"><h2>📜 Practice history</h2><div class="list">${closed || '<div class="empty">No closed practice trades yet.</div>'}</div></div>
+  <div class="card"><details><summary>How Thrust Ride works</summary><div class="small" style="margin-top:8px">It waits for a coin to jump hard in one hour (at least 3.5× a normal hour), with more than 55% buyers, closing near the top, while the bigger trend is up. Then it buys (LONG). The stop loss is small (about 2 normal moves, max 8%), the take profit is 8× the risk, and it closes after 48 hours if neither is hit. It wins about 1 in 3, but each win is much bigger than each loss. Practice uses 10 USDT × 10 from a 1000 USDT practice account.</div></details></div>`;
+}
+// ---------------- real tab
+function real() {
+  const R = DATA.real, a = R.account || {}, ru = R.rules || {}, on = R.enabled && !R.dryRun && !R.stopFile;
+  const nOwn = (R.positions || []).length + (R.orders || []).length;
+  const st = on ? `<div class="status on">🟢 Real trading is ON. When a new Thrust Ride signal appears, the bot also buys it on Binance with real money.</div>`
+    : `<div class="status off">🟡 Real trading is OFF${R.stopFile ? " (kill switch on)" : R.dryRun ? " (test mode)" : ""}. Only practice trades run.</div>`;
+  const cards = (R.positions || []).map(p => {
+    const px = PX[p.symbol] || p.mark, e = +p.entry, q = +p.qty, now = px ? money(q, e, px) : null, sl = +p.sl;
+    const tr = p.trail ? `<span class="pill ${p.trailOk ? "g" : "a"}">${p.trailOk ? "🔁 Trailing stop saved on Binance (starts at " + fp(p.trail.activatePrice) + ")" : "⚠ Trailing stop not on Binance yet"}</span>` : "";
+    return `<div class="trade"><div class="trow"><span class="coin">${esc(coin(p.symbol))} <span class="pill g">⬆ LONG</span> <span class="pill b">🚀 REAL</span></span><span class="small">opened ${esc(when(p.openedAt))}</span></div>
+    <div class="trow" style="margin-top:6px"><span class="small">Price now ${priceSpan(p.symbol)}</span><span class="big num ${cls(now)}" style="font-size:24px">${now === null ? "…" : usd(now)}</span></div>
+    ${bar({ entry: e, tp: +p.tp, orig: null }, px, sl)}
+    <div class="grid"><div class="box"><div class="l">Size</div><div class="v" style="font-size:15px">${fp(q)} ${esc(coin(p.symbol))} · ${(+p.margin).toFixed(2)} USDT × 10</div></div>
+    <div class="box"><div class="l">If stop loss hits</div><div class="v ${cls(money(q, e, sl))}">${usd(money(q, e, sl))}</div></div>
+    <div class="box"><div class="l">If take profit hits</div><div class="v pos">${usd(money(q, e, +p.tp))}</div></div>
+    <div class="box"><div class="l">⏰ 48 h time limit</div><div class="v" style="font-size:15px">${esc(left(p.timeExitAt))}</div></div></div>
+    <div class="badges"><span class="pill ${p.slOk ? "g" : "r"}">${p.slOk ? "🛑 SL saved on Binance" : "⚠ SL missing: the guard is fixing it"}</span><span class="pill ${p.tpOk ? "g" : "r"}">${p.tpOk ? "🎯 TP saved on Binance" : "⚠ TP missing: the guard is fixing it"}</span>${tr}${stepBadge(p.stopStep)}</div></div>`;
+  }).join("");
+  const S = R.stats || {};
+  const hist = (R.history || []).slice().reverse().map(h => `<div class="it"><div><b>${h.result === "win" ? "✅" : h.result === "loss" ? "❌" : "➖"} ${esc(coin(h.symbol))}</b> <span class="small">${esc(REASON[h.reason] || h.reason || "")}</span><div class="small">${fp(h.fillPrice || h.entry)} → ${fp(h.exit)} · ${fp(h.qty)} coins · ${(+h.margin).toFixed(2)} USDT × 10 · ${esc(when(h.closedAt))}</div></div><div style="text-align:right"><div class="num ${cls(h.pnl)}" style="font-weight:900">${usd(h.pnl)}</div><div class="small">fee ${(+h.fees || 0).toFixed(3)}</div></div></div>`).join("");
+  const sk = (R.skipped || []).slice().reverse().map(s => `<div class="it"><div><b>${esc(coin(s.symbol))}</b><div class="small">${esc(s.reason)}</div></div><div class="small">${esc(when(s.at))}</div></div>`).join("");
+  const day = R.day || {};
+  return st + `<div class="card"><h2>💳 Binance wallet (Futures)</h2><div class="big num">${(+a.wallet || 0).toFixed(2)} <span style="font-size:16px">USDT</span></div><div class="small">updated ${esc(ago(R.stateAt))}</div>
+   <div class="grid" style="margin-top:10px"><div class="box"><div class="l">Free to use</div><div class="v">${(+a.available || 0).toFixed(2)}</div></div>
+   <div class="box"><div class="l">Today (all real trades)</div><div class="v ${cls(day.pnl)}">${usd(day.pnl || 0)}</div></div>
+   <div class="box"><div class="l">Thrust real trades open</div><div class="v">${nOwn} / ${ru.ownMax ?? 2}</div></div>
+   <div class="box"><div class="l">All real trades open</div><div class="v">${R.openCount || 0} / ${ru.maxOpen ?? 4}</div></div></div>
+   <div class="small" style="margin-top:10px">Rules: ${ru.margin ?? 3} USDT × ${ru.lev ?? 10} per trade (or the coin's minimum if it is under ${ru.maxMargin ?? 10} USDT), at most ${ru.ownMax ?? 2} Thrust Ride trades and ${ru.maxOpen ?? 4} real trades in total, closes after ${ru.holdH ?? 48} hours, and no new trades for the day after −${ru.dailyStop ?? 5} USDT. Coins you trade yourself are left alone.${day.stopHit ? ' <b class="neg">Daily stop is on today.</b>' : ""}</div></div>
+  <div class="card"><h2>🏃 Running on Binance (Thrust Ride)</h2>${cards || '<div class="empty">No real Thrust Ride trade right now. It opens only when a real signal appears.</div>'}</div>
+  <div class="card"><h2>📜 Real Thrust Ride history</h2><div class="grid" style="margin-bottom:6px"><div class="box"><div class="l">Closed</div><div class="v">${S.trades || 0}</div></div><div class="box"><div class="l">Win rate</div><div class="v">${S.winRate == null ? "—" : S.winRate + "%"}</div></div><div class="box"><div class="l">Total after fees</div><div class="v ${cls(S.totalPnl)}">${usd(S.totalPnl || 0)}</div></div></div><div class="list">${hist || '<div class="empty">No closed real Thrust Ride trades yet.</div>'}</div></div>
+  ${sk ? `<div class="card"><h2>⏭️ Signals not copied to Binance</h2><div class="list">${sk}</div></div>` : ""}`;
+}
+let lastHtml = "";
+function render(soft) {
+  if (!DATA) return; pills();
+  document.querySelectorAll(".tab").forEach(el => el.classList.toggle("on", el.dataset.t === TAB));
+  const h = TAB === "real" ? real() : practice();
+  if (h !== lastHtml) { const y = window.scrollY; $("view").innerHTML = h; lastHtml = h; if (soft) window.scrollTo(0, y); }
+}
+loadData(true);
+(function poll() { setTimeout(async () => { await loadData(); poll(); }, pollMs || 30000); })();
+setInterval(prices, 5000);
+setInterval(() => { if (DATA && !document.hidden) render(true); }, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { loadData(); prices(); } });
+</script>
+</body>
+</html>
