@@ -17,6 +17,7 @@ a{color:var(--teal)}.wrap{max-width:1180px;margin:0 auto;padding:14px 14px 90px}
 .mode{font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px;background:#3b2a07;color:#fcd34d;border:1px solid #6b4e0e}.mode.real{background:#3a0d16;color:#fda4af;border-color:#7f1d2d}
 .banner{border-radius:var(--r);padding:12px 14px;margin:8px 0 12px;display:flex;gap:10px;align-items:center;font-weight:600}
 .banner.red{background:linear-gradient(90deg,#4a0f1c,#2a0d18);border:1px solid #7f1d2d}.banner.amb{background:linear-gradient(90deg,#3d2a06,#241a08);border:1px solid #6b4e0e}.banner.ok{background:#0d2a24;border:1px solid #155e52}
+.gb{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}.gb.gA{background:#064e3b;color:#6ee7b7}.gb.gB{background:#0c3a5e;color:#7dd3fc}.gb.gC{background:#4a3606;color:#fcd34d}.gb.gN{background:#2a2f3a;color:#9aa4b2}.rrb{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px;background:#1e293b;color:#e2e8f0;vertical-align:middle}.slot small{display:block;font-size:10px;opacity:.9}
 .banner small{display:block;font-weight:400;color:#cbd5e1}
 .grid{display:grid;gap:12px;grid-template-columns:1fr}@media(min-width:900px){.grid.hero{grid-template-columns:1.1fr .9fr 1.4fr}.grid.two{grid-template-columns:1.25fr .75fr}}
 .card{background:linear-gradient(180deg,var(--card),#0e1628);border:1px solid var(--line);border-radius:var(--r);padding:14px}
@@ -166,7 +167,7 @@ function stepsHtml(i){const st=(i.trigger||{}).steps||[];const done=+String(i.tr
  return '<ul class="steps">'+st.map((s,k)=>`<li><span class="ck ${k<done?"on":""}">${k<done?"✓":k+1}</span><span>A <b>${esc(s.tf)}</b> candle ${opTxt[s.op]||esc(s.op)} <b>${pfmt(s.level)}</b></span></li>`).join("")+"</ul>"}
 function dist(i,lvl){const p=PX[i.symbol];return p?((lvl-p)/p*100).toFixed(2)+"%":""}
 function ideaCard(i,best){const g=i.grade||"C";
- const main=`<div class="row"><div class="grade g${g}">${g}</div><div><div class="mid">${esc(i.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span></div>${sideChip(i.side)}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${i.symbol}">${pfmt(PX[i.symbol])}</b></div></div>
+ const main=`<div class="row"><div class="grade g${g}">${g}</div><div><div class="mid">${esc(i.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span>${gb(g,i.net_rr)}</div>${sideChip(i.side)}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${i.symbol}">${pfmt(PX[i.symbol])}</b></div></div>
   <div class="label" style="margin-top:10px">How it starts (all steps, in order):</div>${stepsHtml(i)}
   <div class="kv"><div><span class="label">Entry</span><b>${pfmt(i.entry)}</b></div><div><span class="label">🎯 Target</span><b class="up">${pfmt(i.tp)}</b></div><div><span class="label">🛑 Stop (Mark)</span><b class="dn">${pfmt(i.sl)}</b></div></div>
   ${i.why?`<div class="todo" style="background:var(--card2);color:var(--ink)">💬 ${esc(i.why)}</div>`:""}`;
@@ -180,8 +181,10 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  $("bal").textContent=b.wallet!=null?usd(b.wallet):"–";$("avail").textContent=usd(b.available);
  [["today",inc.today],["d7",inc.d7]].forEach(([k,v])=>{$(k).textContent=usd(v,1);$(k).className=cls(v)});
  const sl=D.slots||{used:0,max:4,ideas:0,running:0};$("slotTxt").textContent=sl.used+" / "+sl.max+(sl.used>=sl.max?" · FULL":"");
- let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?'<div class="slot run">running</div>':k<sl.running+sl.ideas?'<div class="slot idea">idea</div>':'<div class="slot">free</div>';$("slots").innerHTML=h;
- const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Coins that need more are skipped. When all slots are running, the AI check only reviews them (no new scan).`;
+ const oi=(D.ideas||[]),rI=oi.filter(i=>i.status=="running"||i.status=="entering"),wI=oi.filter(i=>!(i.status=="running"||i.status=="entering")).sort((a,c)=>rk(c)-rk(a));
+ const sb=i=>i?`<small>${esc(i.symbol.replace("USDT",""))} ${i.side=="LONG"?"▲":"▼"}</small><small>${/^[ABC]$/.test(i.grade)?i.grade:"–"} · 1:${esc(i.net_rr)}</small>`:"";
+ let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?`<div class="slot run">running${sb(rI[k])}</div>`:k<sl.running+sl.ideas?`<div class="slot idea">idea${sb(wI[k-sl.running])}</div>`:'<div class="slot">free</div>';$("slots").innerHTML=h;
+ const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Grades A, B and C get real orders when triggered (R:R: A 1:2+, B/C 1:1.5+). Coins that need more margin are skipped. Full slots: a stronger new idea replaces the weakest waiting one; running trades are never replaced.`;
  const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
  $("best").className="";const W=D.lastScan&&D.lastScan.watch&&D.lastScan.watch.symbol?D.lastScan.watch:null;
  const wIsIdea=W&&ideas.some(i=>i.symbol==W.symbol&&i.side==W.side);
@@ -189,21 +192,22 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  $("ideaList").innerHTML=ideas.length?ideas.map((i,k)=>ideaCard(i,k==0)).join(""):'<div class="card empty">No waiting ideas right now.</div>';
  runs();orders();hist(inc);alerts();news();prices();live();pills()}
 function watchCard(ls){const w=ls.watch,sh=w.side=="SHORT";
- return `<div class="row" style="margin-top:8px"><span class="chip" style="color:var(--amb);border-color:#78350f;background:#2d2307">👀 Best idea at this check · watch only, no order</span><span class="label">${w.grade&&!/none/i.test(w.grade)?"Grade "+esc(w.grade):"Grade: below B"} · orders only for grade B+ with enough R:R</span></div>
- <div class="row" style="margin-top:8px"><div class="grade g${/^[ABC]/.test(w.grade||"")?esc(w.grade[0]):"C"}" style="font-size:13px">${w.grade&&!/none/i.test(w.grade)?esc(w.grade):"—"}</div><div><div class="mid">${esc(w.symbol)}</div>${w.side?sideChip(w.side):""}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${esc(w.symbol)}">${pfmt(PX[w.symbol])}</b></div></div>
+ return `<div class="row" style="margin-top:8px"><span class="chip" style="color:var(--amb);border-color:#78350f;background:#2d2307">👀 Best idea at this check · watch only, no order</span><span class="label">${w.grade&&!/none/i.test(w.grade)?"Grade "+esc(w.grade):"Grade: none"} · orders only for grade A, B or C with enough R:R</span></div>
+ <div class="row" style="margin-top:8px"><div class="grade g${/^[ABC]/.test(w.grade||"")?esc(w.grade[0]):"C"}" style="font-size:13px">${w.grade&&!/none/i.test(w.grade)?esc(w.grade):"—"}</div><div><div class="mid">${esc(w.symbol)}${gb(w.grade,w.net_rr)}</div>${w.side?sideChip(w.side):""}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${esc(w.symbol)}">${pfmt(PX[w.symbol])}</b></div></div>
  <div class="kv"><div><span class="label">Entry</span><b>${pfmt(w.entry)}</b></div><div><span class="label">🎯 Target</span><b class="up">${pfmt(w.tp)}</b></div><div><span class="label">🛑 Stop</span><b class="dn">${pfmt(w.sl)}</b></div></div>
  <div class="kv" style="grid-template-columns:1fr 1fr"><div><span class="label">Breakeven at</span><b>${pfmt(w.breakeven)}</b></div><div><span class="label">Net R:R</span><b>${w.net_rr!=null?"1 : "+esc(w.net_rr):"–"}</b></div></div>
  ${w.trigger?`<div class="todo warn">⏳ WAIT FOR TRIGGER: ${esc(w.trigger)}</div>`:""}
  <div class="label" style="margin-top:8px">${esc(ls.verdict||"NO TRADE - WAIT")} · check at ${hm(ls.finishedAt||ls.at)}. No order is placed for this; a new check must turn it into an idea.</div>`}
-const rk=i=>({A:3,B:2,C:1}[i.grade]||0)*100+(+i.score||0)+(+i.net_rr||0)*5;
-function bestMini(i){return `<div class="row" style="margin-top:8px"><div class="grade g${i.grade}">${i.grade}</div><div><div class="mid">${esc(i.symbol)}</div>${sideChip(i.side)}</div></div>
+const rk=i=>({A:3,B:2,C:1}[i.grade]||0)*1e6+(+i.score||0)*1e3+(+i.net_rr||0);
+function gb(g,rr){const ok=/^[ABC]$/.test(g||"");return `<span class="gb g${ok?g:"N"}">${ok?"Grade "+esc(g):"No grade"}</span><span class="rrb">R:R ${rr!=null&&rr!==""?"1:"+esc(rr):"–"}</span>`}
+function bestMini(i){return `<div class="row" style="margin-top:8px"><div class="grade g${i.grade}">${i.grade}</div><div><div class="mid">${esc(i.symbol)}${gb(i.grade,i.net_rr)}</div>${sideChip(i.side)}</div></div>
  <div class="kv"><div><span class="label">Entry</span><b>${pfmt(i.entry)}</b></div><div><span class="label">Target</span><b class="up">${pfmt(i.tp)}</b></div><div><span class="label">Stop</span><b class="dn">${pfmt(i.sl)}</b></div></div>
  <div class="row" style="margin-top:8px"><span class="label">Net R:R 1:${i.net_rr} · ${esc(stTxt[i.status]||i.status)} · trigger ${esc(i.triggerProgress||"0/"+((i.trigger||{}).steps||[]).length)}</span><span class="sp"></span><span class="label">valid ${left(i.valid_until)}</span></div>`}
 function runList(){const out=[];const b=D.binance||{};const prac=(D.ideas||[]).filter(i=>i.status=="running"&&i.mode!="REAL");
- (b.positions||[]).forEach(p=>out.push({real:1,symbol:p.symbol,side:p.side,entry:p.entry,qty:p.qty,sl:p.sl,tp:p.tp,since:p.updated,margin:p.margin}));
- prac.forEach(i=>out.push({real:0,symbol:i.symbol,side:i.side,entry:i.fillPrice,qty:+i.qty,sl:i.slNow,tp:i.tp,since:i.openedAt,be:i.beMoved,margin:3}));return out}
+ (b.positions||[]).forEach(p=>{const i=(D.ideas||[]).find(x=>x.symbol==p.symbol&&x.mode=="REAL"&&(x.status=="running"||x.status=="entering"));out.push({real:1,symbol:p.symbol,side:p.side,entry:p.entry,qty:p.qty,sl:p.sl,tp:p.tp,since:p.updated,margin:p.margin,grade:i?i.grade:null,rr:i?i.net_rr:null,own:!i})});
+ prac.forEach(i=>out.push({real:0,symbol:i.symbol,side:i.side,entry:i.fillPrice,qty:+i.qty,sl:i.slNow,tp:i.tp,since:i.openedAt,be:i.beMoved,margin:3,grade:i.grade,rr:i.net_rr}));return out}
 function runs(){const L=runList();$("nR").textContent=L.length;
- $("runList").innerHTML=L.length?L.map((t,k)=>`<div class="card"><div class="row"><div><div class="mid">${esc(t.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span> ${t.real?'<span class="tag">Binance</span>':'<span class="tag p">PRACTICE</span>'}</div>${sideChip(t.side)}</div><span class="sp"></span><div style="text-align:right"><div class="big" id="rp${k}">–</div><div class="label" id="rq${k}"></div></div></div>
+ $("runList").innerHTML=L.length?L.map((t,k)=>`<div class="card"><div class="row"><div><div class="mid">${esc(t.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span> ${t.own?'<span class="tag">not from desk</span>':gb(t.grade,t.rr)} ${t.real?'<span class="tag">Binance</span>':'<span class="tag p">PRACTICE</span>'}</div>${sideChip(t.side)}</div><span class="sp"></span><div style="text-align:right"><div class="big" id="rp${k}">–</div><div class="label" id="rq${k}"></div></div></div>
   <div class="kv"><div><span class="label">Entry</span><b>${pfmt(t.entry)}</b></div><div><span class="label">Now (Mark)</span><b id="rn${k}">–</b></div><div><span class="label">Since</span><b>${t.since?hm(t.since):"–"}</b></div></div>
   <div class="kv" style="grid-template-columns:1fr 1fr"><div><span class="label">🎯 Take profit</span><b class="up">${pfmt(t.tp)}</b></div><div><span class="label">🛑 Stop loss</span><b class="dn">${pfmt(t.sl)}</b></div></div>
   ${t.sl&&t.tp?`<div class="bar"><div class="e" id="re${k}"></div><div class="m" id="rm${k}"></div></div><div class="barl"><span>🛑 ${pfmt(t.sl)}</span><span>entry ${pfmt(t.entry)}</span><span>🎯 ${pfmt(t.tp)}</span></div>`:""}
