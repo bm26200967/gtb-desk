@@ -137,7 +137,7 @@ setInterval(poll,60e3);
 /* ---------- live prices (Binance websocket, public, no key) */
 let ws=null, subs=[];
 function wantSyms(){const s=new Set((D&&D.watchlist)||["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","XRPUSDT","DOGEUSDT","ZECUSDT"]);
- if(D){(D.ideas||[]).forEach(i=>s.add(i.symbol));((D.binance||{}).positions||[]).forEach(p=>s.add(p.symbol))}return[...s]}
+ if(D){(D.ideas||[]).forEach(i=>s.add(i.symbol));if(D.lastScan&&D.lastScan.watch&&D.lastScan.watch.symbol)s.add(D.lastScan.watch.symbol);((D.binance||{}).positions||[]).forEach(p=>s.add(p.symbol))}return[...s]}
 function connect(){const syms=wantSyms();subs=syms.join();const st=syms.flatMap(x=>[x.toLowerCase()+"@miniTicker",x.toLowerCase()+"@markPrice@1s"]).join("/");
  try{ws&&ws.close()}catch(e){};ws=new WebSocket("wss://fstream.binance.com/market/stream?streams="+st);
  ws.onmessage=ev=>{const m=JSON.parse(ev.data).data;if(!m)return;pxAt=Date.now();if(m.e=="24hrMiniTicker"){const o=PX[m.s];PX[m.s]=+m.c;CH[m.s]=(+m.c-+m.o)/+m.o*100;tick(m.s,o)}else if(m.e=="markPriceUpdate"){MK[m.s]=+m.p;if(!PX[m.s])PX[m.s]=+m.p;live()}};
@@ -183,9 +183,16 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?'<div class="slot run">running</div>':k<sl.running+sl.ideas?'<div class="slot idea">idea</div>':'<div class="slot">free</div>';$("slots").innerHTML=h;
  const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Coins that need more are skipped. When all slots are running, the AI check only reviews them (no new scan).`;
  const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
- $("best").className="";$("best").innerHTML=ideas.length?bestMini(ideas[0]):`<div class="empty">${D.lastScan?esc(D.lastScan.verdict||"No trade at the last check — wait."):"Waiting for the first AI check…"}${D.lastScan&&D.lastScan.market_note?`<br><small>${esc(D.lastScan.market_note)}</small>`:""}</div>`;
+ $("best").className="";$("best").innerHTML=ideas.length?bestMini(ideas[0]):(D.lastScan&&D.lastScan.watch&&D.lastScan.watch.symbol)?watchCard(D.lastScan):`<div class="empty">${D.lastScan?esc(D.lastScan.verdict||"No trade at the last check — wait."):"Waiting for the first AI check…"}${D.lastScan&&D.lastScan.market_note?`<br><small>${esc(D.lastScan.market_note)}</small>`:""}</div>`;
  $("ideaList").innerHTML=ideas.length?ideas.map((i,k)=>ideaCard(i,k==0)).join(""):'<div class="card empty">No waiting ideas right now.</div>';
  runs();orders();hist(inc);alerts();news();prices();live();pills()}
+function watchCard(ls){const w=ls.watch,sh=w.side=="SHORT";
+ return `<div class="row" style="margin-top:8px"><span class="chip" style="color:var(--amb);border-color:#78350f;background:#2d2307">👀 Closest candidate · watch only, no order</span></div>
+ <div class="row" style="margin-top:8px"><div class="grade gC" style="font-size:13px">—</div><div><div class="mid">${esc(w.symbol)}</div>${w.side?sideChip(w.side):""}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${esc(w.symbol)}">${pfmt(PX[w.symbol])}</b></div></div>
+ <div class="kv"><div><span class="label">Entry</span><b>${pfmt(w.entry)}</b></div><div><span class="label">🎯 Target</span><b class="up">${pfmt(w.tp)}</b></div><div><span class="label">🛑 Stop</span><b class="dn">${pfmt(w.sl)}</b></div></div>
+ <div class="kv" style="grid-template-columns:1fr 1fr"><div><span class="label">Breakeven at</span><b>${pfmt(w.breakeven)}</b></div><div><span class="label">Net R:R</span><b>${w.net_rr!=null?"1 : "+esc(w.net_rr):"–"}</b></div></div>
+ ${w.trigger?`<div class="todo warn">⏳ WAIT FOR TRIGGER: ${esc(w.trigger)}</div>`:""}
+ <div class="label" style="margin-top:8px">${esc(ls.verdict||"NO TRADE - WAIT")} · check at ${hm(ls.finishedAt||ls.at)}. No order is placed for this; a new check must turn it into an idea.</div>`}
 const rk=i=>({A:3,B:2,C:1}[i.grade]||0)*100+(+i.score||0)+(+i.net_rr||0)*5;
 function bestMini(i){return `<div class="row" style="margin-top:8px"><div class="grade g${i.grade}">${i.grade}</div><div><div class="mid">${esc(i.symbol)}</div>${sideChip(i.side)}</div></div>
  <div class="kv"><div><span class="label">Entry</span><b>${pfmt(i.entry)}</b></div><div><span class="label">Target</span><b class="up">${pfmt(i.tp)}</b></div><div><span class="label">Stop</span><b class="dn">${pfmt(i.sl)}</b></div></div>
