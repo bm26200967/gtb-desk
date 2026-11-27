@@ -136,8 +136,8 @@ prices();
 /* ---------- pills */
 function pill(id,cl,t){const e=$(id);e.className="pill "+cl;e.innerHTML="<i></i>"+t}
 function pills(){pill("pPx",Date.now()-pxAt<10e3?"ok":"warn",pxAt?"Prices live":"Prices: connecting");if(!D)return;
- const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<180e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"));
- const wA=D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<300e3?"ok":"warn","Free watcher "+(wA<1e11?ago(wA):"–"));
+ const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<300e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"));
+ const wA=D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<400e3?"ok":"warn","Free watcher "+(wA<1e11?ago(wA):"–"));
  const s=D.lastScan;pill("pS",s?"ok":"warn",s?"Last AI check "+hm(s.at):"AI check: not yet")}
 
 /* ---------- render */
