@@ -25,7 +25,7 @@ h2{font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut)
 .label{color:var(--mut);font-size:12px}.big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}.mid{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--dn)}.muted{color:var(--mut)}.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.sp{flex:1}
 .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.kv div{background:var(--card2);border-radius:10px;padding:8px}.kv b{display:block;font-variant-numeric:tabular-nums}
-.slots{display:flex;gap:10px;margin:12px 0 6px}.slot{flex:1;height:54px;border-radius:12px;border:2px dashed var(--line);display:grid;place-items:center;font-size:12px;color:var(--mut)}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 6px}.slot{height:44px;border-radius:10px;border:2px dashed var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;font-size:11px;line-height:1.25;color:var(--mut)}.slot.wait{border:2px solid var(--amb);background:rgba(245,158,11,.1);color:var(--amb)}.cnt{display:flex;gap:6px;margin-top:6px}.cnt span{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--card2)}
 .slot.idea{border:2px solid var(--blue);background:rgba(96,165,250,.1);color:var(--blue)}.slot.run{border:2px solid var(--up);background:rgba(34,197,94,.12);color:var(--up)}
 .legend{font-size:12px;color:var(--mut)}
 .chip{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
@@ -71,8 +71,8 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
   <div class="card"><div class="label">💰 My Binance futures balance</div><div class="big" id="bal">–</div>
    <div class="row"><span class="label">Open profit (live)</span><span class="mid" id="upnl">–</span></div>
    <div class="kv"><div><span class="label">Free</span><b id="avail">–</b></div><div><span class="label">Today</span><b id="today">–</b></div><div><span class="label">7 days</span><b id="d7">–</b></div></div></div>
-  <div class="card"><div class="row"><div class="label">🎯 Slots (ideas + running)</div><span class="sp"></span><b id="slotTxt">–</b></div>
-   <div class="slots" id="slots"></div><div class="legend"><span style="color:var(--blue)">■</span> waiting idea · <span style="color:var(--up)">■</span> running trade · ▢ free</div>
+  <div class="card"><div class="row"><div class="label">🎯 Slots (ideas + running)</div><span class="sp"></span><b id="slotTxt">–</b></div><div class="cnt"><span id="runCnt" style="color:var(--up)">–</span><span id="slotCnt">–</span></div>
+   <div class="slots" id="slots"></div><div class="legend"><span style="color:var(--blue)">■</span> waiting idea · <span style="color:var(--amb)">■</span> triggered, waiting (4 running max) · <span style="color:var(--up)">■</span> running · ▢ free</div>
    <div class="legend" id="rules" style="margin-top:8px"></div>
    <div class="side" style="margin-top:10px"><div class="row"><b>🕐 Full AI scan every 1.5 hours</b><span class="sp"></span><b id="nextScan" style="color:var(--teal)">–</b></div><div class="legend" id="sched" style="margin-top:4px"></div></div></div>
   <div class="card" id="bestCard"><div class="label">⭐ Best idea from the last check</div><div id="best" class="empty">Waiting for the first AI check…</div></div>
@@ -162,7 +162,7 @@ function pills(){pill("pPx",Date.now()-pxAt<10e3?"ok":"warn",pxAt?"Prices live":
 /* ---------- render */
 const sideChip=s=>s=="LONG"?'<span class="chip long">LONG · wins if price goes UP</span>':'<span class="chip short">SHORT · wins if price goes DOWN</span>';
 const opTxt={close_above:"closes above",close_below:"closes below",high_above:"goes above",low_below:"goes below"};
-const stTxt={watching:"Waiting for trigger",news_wait:"Triggered, waiting for news time to end",running:"Running"};
+const stTxt={watching:"Waiting for trigger",news_wait:"Triggered, waiting for news time to end",run_wait:"Triggered · waiting: 4 running trades max",entering:"Opening on Binance…",running:"Running"};
 function stepsHtml(i){const st=(i.trigger||{}).steps||[];const done=+String(i.triggerProgress||"0").split("/")[0];
  return '<ul class="steps">'+st.map((s,k)=>`<li><span class="ck ${k<done?"on":""}">${k<done?"✓":k+1}</span><span>A <b>${esc(s.tf)}</b> candle ${opTxt[s.op]||esc(s.op)} <b>${pfmt(s.level)}</b></span></li>`).join("")+"</ul>"}
 function dist(i,lvl){const p=PX[i.symbol];return p?((lvl-p)/p*100).toFixed(2)+"%":""}
@@ -180,11 +180,12 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  $("mode").textContent=D.mode=="REAL"?"REAL MONEY":"PRACTICE MODE · no real orders";$("mode").className="mode"+(D.mode=="REAL"?" real":"");
  $("bal").textContent=b.wallet!=null?usd(b.wallet):"–";$("avail").textContent=usd(b.available);
  [["today",inc.today],["d7",inc.d7]].forEach(([k,v])=>{$(k).textContent=usd(v,1);$(k).className=cls(v)});
- const sl=D.slots||{used:0,max:4,ideas:0,running:0};$("slotTxt").textContent=sl.used+" / "+sl.max+(sl.used>=sl.max?" · FULL":"");
- const oi=(D.ideas||[]),rI=oi.filter(i=>i.status=="running"||i.status=="entering"),wI=oi.filter(i=>!(i.status=="running"||i.status=="entering")).sort((a,c)=>rk(c)-rk(a));
- const sb=i=>i?`<small>${esc(i.symbol.replace("USDT",""))} ${i.side=="LONG"?"▲":"▼"}</small><small>${/^[ABC]$/.test(i.grade)?i.grade:"–"} · 1:${esc(i.net_rr)}</small>`:"";
- let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?`<div class="slot run">running${sb(rI[k])}</div>`:k<sl.running+sl.ideas?`<div class="slot idea">idea${sb(wI[k-sl.running])}</div>`:'<div class="slot">free</div>';$("slots").innerHTML=h;
- const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Grades A, B and C get real orders when triggered (R:R: A 1:2+, B/C 1:1.5+). Coins that need more margin are skipped. Full slots: a stronger new idea replaces the weakest waiting one; running trades are never replaced.`;
+ const sl=D.slots||{used:0,max:12,ideas:0,running:0,maxRunning:4};const mR=sl.maxRunning||4;$("slotTxt").textContent=sl.used+" / "+sl.max+(sl.used>=sl.max?" · FULL":"");
+ $("runCnt").textContent=`▶ ${sl.running}/${mR} running`+(sl.running>=mR?" · MAX":"");$("slotCnt").textContent=`${sl.used}/${sl.max} slots`;
+ const oi=(D.ideas||[]),rI=oi.filter(i=>i.status=="running"||i.status=="entering"),wI=oi.filter(i=>!(i.status=="running"||i.status=="entering")).sort((a,c)=>(c.status=="run_wait")-(a.status=="run_wait")||rk(c)-rk(a));
+ const sb=i=>i?`<b style="font-size:11px">${esc(i.symbol.replace("USDT",""))} ${i.side=="LONG"?"▲":"▼"}</b><small>${/^[ABC]$/.test(i.grade)?i.grade:"–"} · 1:${esc(i.net_rr)}</small>`:"";
+ let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?`<div class="slot run">${sb(rI[k])||"running"}</div>`:k<sl.running+sl.ideas?`<div class="slot ${wI[k-sl.running]&&wI[k-sl.running].status=="run_wait"?"wait":"idea"}">${sb(wI[k-sl.running])||"idea"}</div>`:'<div class="slot">free</div>';$("slots").innerHTML=h;
+ const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Grades A, B and C get real orders when triggered (R:R: A 1:2+, B/C 1:1.5+). Coins that need more margin are skipped. 12 slots for ideas + trades, at most 4 trades running at once (a 5th trigger waits). Full slots: a stronger new idea replaces the weakest waiting one; running trades are never replaced.`;
  const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
  $("best").className="";const W=D.lastScan&&D.lastScan.watch&&D.lastScan.watch.symbol?D.lastScan.watch:null;
  const wIsIdea=W&&ideas.some(i=>i.symbol==W.symbol&&i.side==W.side);
