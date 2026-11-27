@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse · Rasni's Futures Desk</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://fapi.binance.com wss://fstream.binance.com https://api.github.com https://raw.githubusercontent.com; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<style>
+:root{--bg:#0a0f1c;--card:#111a2e;--card2:#16213a;--line:#22304f;--ink:#e8eefc;--mut:#8b9bbd;--teal:#2dd4bf;--up:#22c55e;--dn:#f43f5e;--amb:#f59e0b;--blue:#60a5fa;--vio:#a78bfa;--r:16px}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#15234a 0,transparent 60%),var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--teal)}.wrap{max-width:1180px;margin:0 auto;padding:14px 14px 90px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.logo{font-weight:800;font-size:20px;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 0 rgba(45,212,191,.7);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(45,212,191,0)}100%{box-shadow:0 0 0 0 rgba(45,212,191,0)}}
+.clock{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}.clock b{font-size:18px}.clock small{display:block;color:var(--mut);font-size:11px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.pill{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.pill i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--mut);vertical-align:1px}.pill.ok i{background:var(--up)}.pill.warn i{background:var(--amb)}.pill.bad i{background:var(--dn)}
+.mode{font-weight:700;font-size:12px;padding:5px 10px;border-radius:8px;background:#3b2a07;color:#fcd34d;border:1px solid #6b4e0e}.mode.real{background:#3a0d16;color:#fda4af;border-color:#7f1d2d}
+.banner{border-radius:var(--r);padding:12px 14px;margin:8px 0 12px;display:flex;gap:10px;align-items:center;font-weight:600}
+.banner.red{background:linear-gradient(90deg,#4a0f1c,#2a0d18);border:1px solid #7f1d2d}.banner.amb{background:linear-gradient(90deg,#3d2a06,#241a08);border:1px solid #6b4e0e}.banner.ok{background:#0d2a24;border:1px solid #155e52}
+.banner small{display:block;font-weight:400;color:#cbd5e1}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}@media(min-width:900px){.grid.hero{grid-template-columns:1.1fr .9fr 1.4fr}.grid.two{grid-template-columns:1.25fr .75fr}}
+.card{background:linear-gradient(180deg,var(--card),#0e1628);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+h2{font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);margin:22px 4px 10px;display:flex;align-items:center;gap:8px}h2 .n{background:var(--card2);color:var(--ink);border-radius:999px;padding:1px 8px;font-size:12px}
+.label{color:var(--mut);font-size:12px}.big{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}.mid{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.dn{color:var(--dn)}.muted{color:var(--mut)}.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.sp{flex:1}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.kv div{background:var(--card2);border-radius:10px;padding:8px}.kv b{display:block;font-variant-numeric:tabular-nums}
+.slots{display:flex;gap:10px;margin:12px 0 6px}.slot{flex:1;height:54px;border-radius:12px;border:2px dashed var(--line);display:grid;place-items:center;font-size:12px;color:var(--mut)}
+.slot.idea{border:2px solid var(--blue);background:rgba(96,165,250,.1);color:var(--blue)}.slot.run{border:2px solid var(--up);background:rgba(34,197,94,.12);color:var(--up)}
+.legend{font-size:12px;color:var(--mut)}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
+.chip.long{color:var(--up);border-color:#14532d;background:#0b2a1a}.chip.short{color:var(--dn);border-color:#7f1d2d;background:#2a0d15}
+.grade{font-weight:900;font-size:22px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center}.gA{background:#0b2a1a;color:var(--up);border:1px solid #166534}.gB{background:#0c1f3d;color:var(--blue);border:1px solid #1e3a8a}.gC{background:#2d2307;color:var(--amb);border:1px solid #78350f}
+.best{display:grid;gap:12px}@media(min-width:700px){.best{grid-template-columns:1.3fr 1fr}}
+.side{background:var(--card2);border-radius:12px;padding:12px}.side .l{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line);gap:10px}.side .l:last-child{border:0}.side .l span:first-child{color:var(--mut)}
+.steps{list-style:none;padding:0;margin:10px 0}.steps li{padding:6px 0;display:flex;gap:8px}.steps .ck{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;flex:none}.steps .ck.on{background:var(--up);border-color:var(--up);color:#04130a}
+.bar{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,var(--dn),#334155 50%,var(--up));margin:18px 0 6px}.bar .m{position:absolute;top:-6px;width:4px;height:22px;background:#fff;border-radius:2px;box-shadow:0 0 8px #fff}.bar .e{position:absolute;top:-3px;width:2px;height:16px;background:var(--amb)}
+.barl{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}
+.todo{margin-top:10px;padding:9px 11px;border-radius:10px;background:#0d2a24;color:#99f6e4;font-size:14px}.todo.warn{background:#2d2307;color:#fde68a}
+.list .it{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.list .it:last-child{border:0}
+.tag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--mut)}.tag.p{background:#2d2307;color:#fcd34d}
+.prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.px{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}.px b{font-size:17px;font-variant-numeric:tabular-nums;transition:color .4s}
+.flashU{color:var(--up)!important}.flashD{color:var(--dn)!important}
+.news .day{margin:8px 0 4px;font-weight:700;font-size:13px;color:var(--mut)}.news .ev{display:flex;gap:10px;padding:8px 10px;border-radius:10px;background:var(--card2);margin-bottom:6px;align-items:center}
+.news .t{font-variant-numeric:tabular-nums;font-weight:700;min-width:104px;font-size:13px}.b-red{color:#fda4af}.b-orange{color:#fcd34d}.b-yellow{color:#fde68a}
+.al{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.al .w{color:var(--mut);font-size:12px;min-width:62px}
+.empty{color:var(--mut);text-align:center;padding:22px 10px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:rgba(10,15,28,.94);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:9}
+nav.tabs a{color:var(--mut);text-decoration:none;font-size:11px;text-align:center}nav.tabs a span{display:block;font-size:18px}
+#lock{position:fixed;inset:0;background:rgba(5,8,16,.96);display:grid;place-items:center;z-index:20}#lock .box{width:min(360px,90vw);text-align:center}
+#lock input{width:100%;font-size:24px;text-align:center;letter-spacing:8px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);margin:14px 0}
+button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer;width:100%}
+.foot{color:var(--mut);font-size:12px;text-align:center;margin-top:26px}
+</style></head><body>
+<div id="lock"><div class="box"><div class="logo" style="justify-content:center"><span class="dot"></span>Pulse Desk</div>
+<p class="muted">Enter your desk PIN (same PIN as your old desk). It never leaves this phone.</p>
+<input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+<label class="muted" style="display:block;margin-bottom:12px"><input type="checkbox" id="rem" checked> Remember on this device</label>
+<button id="go">Open my desk</button><p id="lockmsg" class="muted"></p>
+<p class="muted" style="font-size:12px">Live prices work without the PIN. <a href="#" id="skip">Only show prices</a></p></div></div>
+
+<div class="wrap">
+ <div class="top"><div class="logo"><span class="dot"></span>Pulse <span class="muted" style="font-weight:500">· futures desk</span></div>
+  <span id="mode" class="mode">PRACTICE MODE</span>
+  <div class="clock"><b id="clk">--:--:--</b><small>Sri Lanka time (UTC+5:30)</small></div></div>
+ <div class="pills"><span class="pill" id="pPx"><i></i>Prices: connecting</span><span class="pill" id="pBn"><i></i>Binance: –</span><span class="pill" id="pW"><i></i>Watcher: –</span><span class="pill" id="pS"><i></i>Last AI check: –</span></div>
+ <div id="newsBanner"></div>
+
+ <div class="grid hero" id="top">
+  <div class="card"><div class="label">💰 My Binance futures balance</div><div class="big" id="bal">–</div>
+   <div class="row"><span class="label">Open profit (live)</span><span class="mid" id="upnl">–</span></div>
+   <div class="kv"><div><span class="label">Free</span><b id="avail">–</b></div><div><span class="label">Today</span><b id="today">–</b></div><div><span class="label">7 days</span><b id="d7">–</b></div></div></div>
+  <div class="card"><div class="row"><div class="label">🎯 Slots (ideas + running)</div><span class="sp"></span><b id="slotTxt">–</b></div>
+   <div class="slots" id="slots"></div><div class="legend"><span style="color:var(--blue)">■</span> waiting idea · <span style="color:var(--up)">■</span> running trade · ▢ free</div>
+   <div class="legend" id="rules" style="margin-top:8px"></div></div>
+  <div class="card" id="bestCard"><div class="label">⭐ Best idea from the last check</div><div id="best" class="empty">Waiting for the first hourly check…</div></div>
+ </div>
+
+ <h2 id="ideas">💡 Ideas <span class="n" id="nI">0</span></h2><div id="ideaList" class="grid"></div>
+ <h2 id="running">🏃 Running trades <span class="n" id="nR">0</span></h2><div id="runList" class="grid two"></div>
+ <div id="ordersBox"></div>
+ <div class="grid two" style="margin-top:0">
+  <div><h2 id="history">📜 History</h2><div class="card"><div class="kv" id="stats"></div><div class="list" id="hist" style="margin-top:8px"></div></div></div>
+  <div><h2 id="alerts">🔔 Alerts <span class="muted" style="text-transform:none;letter-spacing:0">(last 2 days)</span></h2><div class="card" id="alertList"></div></div>
+ </div>
+ <div class="grid two"><div><h2 id="news">📅 News &amp; no-trade times</h2><div class="card news" id="newsList"></div></div>
+  <div><h2 id="prices">⚡ Live prices</h2><div class="prices" id="pxGrid"></div></div></div>
+ <div class="foot">Ideas are not guarantees. Prices move fast. This page only shows information; it can't place or close trades.<br>Data is encrypted with your PIN. Live prices come straight from Binance. No AI tokens are used to update this page.</div>
+</div>
+<nav class="tabs"><a href="#top"><span>💰</span>Balance</a><a href="#ideas"><span>💡</span>Ideas</a><a href="#running"><span>🏃</span>Running</a><a href="#history"><span>📜</span>History</a><a href="#news"><span>📅</span>News</a><a href="#prices"><span>⚡</span>Prices</a></nav>
+<script>
+const REPO="bm26200967/gtb-desk", API="https://api.github.com/repos/"+REPO+"/contents/pulse.enc.json?ref=pulse-data", RAW="https://raw.githubusercontent.com/"+REPO+"/pulse-data/pulse.enc.json";
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TZ="Asia/Colombo", b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)), ub64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
+let D=null, KEY=null, KSALT="", PX={}, MK={}, CH={}, pxAt=0, dataAt=0, apiBlock=0;
+const tfmt=(d,o)=>new Intl.DateTimeFormat("en-GB",Object.assign({timeZone:TZ},o)).format(d);
+const hm=s=>s?tfmt(new Date(s),{hour:"numeric",minute:"2-digit",hour12:true}):"–";
+const dayl=s=>tfmt(new Date(s),{weekday:"short",day:"numeric",month:"short"});
+const ago=ms=>{const s=Math.max(0,Math.round(ms/1000));return s<60?s+"s ago":s<3600?Math.round(s/60)+" min ago":Math.round(s/3600)+" h ago"};
+const usd=(v,sign)=>v==null||isNaN(v)?"–":(sign&&v>0?"+":"")+Number(v).toFixed(2)+" USDT";
+const cls=v=>v>0?"up":v<0?"dn":"";
+function pfmt(v){if(v==null||isNaN(v))return"–";v=+v;const a=Math.abs(v);return v.toFixed(a>=1000?1:a>=10?2:a>=1?3:a>=0.1?4:6)}
+const left=s=>{const ms=new Date(s)-Date.now();if(ms<=0)return"ended";const h=Math.floor(ms/3600e3),m=Math.round(ms%3600e3/60e3);return h>=24?Math.floor(h/24)+"d "+h%24+"h left":h+"h "+m+"m left"};
+setInterval(()=>{$("clk").textContent=tfmt(new Date(),{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true});pills()},1000);
+
+/* ---------- PIN + decrypt (PBKDF2-SHA256 + AES-256-GCM, same as publisher) */
+async function derive(pin,env){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey({name:"PBKDF2",hash:"SHA-256",salt:b64(env.salt),iterations:env.iter},base,{name:"AES-GCM",length:256},true,["decrypt"])}
+async function dec(env){const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(env.iv),additionalData:new TextEncoder().encode("pulse-desk-v1")},KEY,b64(env.ct));return JSON.parse(new TextDecoder().decode(pt))}
+async function getEnv(){
+ if(Date.now()>apiBlock){try{const r=await fetch(API,{cache:"no-cache",headers:{Accept:"application/vnd.github.raw"}});if(r.ok)return await r.json();if(r.status==403||r.status==429)apiBlock=Date.now()+15*60e3}catch(e){}}
+ const r=await fetch(RAW+"?t="+Math.floor(Date.now()/60e3),{cache:"no-store"});return r.json()}
+async function unlock(pin){const env=await getEnv();try{KEY=await derive(pin,env);KSALT=env.salt;D=await dec(env)}catch(e){KEY=null;throw e}
+ if($("rem").checked)localStorage.setItem("pulseK",JSON.stringify({s:env.salt,k:ub64(await crypto.subtle.exportKey("raw",KEY))}));dataAt=Date.now();render()}
+$("go").onclick=async()=>{$("lockmsg").textContent="Opening… (a few seconds)";try{await unlock($("pin").value);$("lock").style.display="none"}catch(e){$("lockmsg").textContent="Wrong PIN, or no data yet. Try again."}};
+$("pin").onkeydown=e=>{if(e.key=="Enter")$("go").click()};$("skip").onclick=e=>{e.preventDefault();$("lock").style.display="none"};
+(async()=>{const s=JSON.parse(localStorage.getItem("pulseK")||"null");if(s){try{KEY=await crypto.subtle.importKey("raw",b64(s.k),"AES-GCM",false,["decrypt"]);KSALT=s.s;$("lock").style.display="none";await poll()}catch(e){localStorage.removeItem("pulseK");KEY=null;$("lock").style.display="grid"}}})();
+async function poll(){if(!KEY)return;try{const env=await getEnv();if(env.salt!==KSALT){localStorage.removeItem("pulseK");location.reload();return}D=await dec(env);dataAt=Date.now();render()}catch(e){console.log(e)}}
+setInterval(poll,60e3);
+
+/* ---------- live prices (Binance websocket, public, no key) */
+let ws=null, subs=[];
+function wantSyms(){const s=new Set((D&&D.watchlist)||["BTCUSDT","ETHUSDT","SOLUSDT","BNBUSDT","XRPUSDT","DOGEUSDT","ZECUSDT"]);
+ if(D){(D.ideas||[]).forEach(i=>s.add(i.symbol));((D.binance||{}).positions||[]).forEach(p=>s.add(p.symbol))}return[...s]}
+function connect(){const syms=wantSyms();subs=syms.join();const st=syms.flatMap(x=>[x.toLowerCase()+"@miniTicker",x.toLowerCase()+"@markPrice@1s"]).join("/");
+ try{ws&&ws.close()}catch(e){};ws=new WebSocket("wss://fstream.binance.com/market/stream?streams="+st);
+ ws.onmessage=ev=>{const m=JSON.parse(ev.data).data;if(!m)return;pxAt=Date.now();if(m.e=="24hrMiniTicker"){const o=PX[m.s];PX[m.s]=+m.c;CH[m.s]=(+m.c-+m.o)/+m.o*100;tick(m.s,o)}else if(m.e=="markPriceUpdate"){MK[m.s]=+m.p;if(!PX[m.s])PX[m.s]=+m.p;live()}};
+ ws.onclose=()=>setTimeout(connect,3000)}
+connect();setInterval(()=>{if(wantSyms().join()!==subs)connect()},10e3);
+setInterval(async()=>{if(Date.now()-pxAt<15e3)return;try{const r=await(await fetch("https://fapi.binance.com/fapi/v1/ticker/price")).json();r.forEach(x=>{if(wantSyms().includes(x.symbol)){PX[x.symbol]=+x.price;if(!MK[x.symbol])MK[x.symbol]=+x.price}});pxAt=Date.now()-5e3;live();prices()}catch(e){}},8e3);
+let pxT=0;function tick(s,o){const now=Date.now();if(now-pxT>700){pxT=now;prices()}const el=$("px_"+s);if(el&&o!=null&&PX[s]!=o){el.classList.add(PX[s]>o?"flashU":"flashD");setTimeout(()=>el.classList.remove("flashU","flashD"),500)}live()}
+function prices(){const g=$("pxGrid");const syms=wantSyms();if(g.dataset.k!==syms.join()){g.dataset.k=syms.join();g.innerHTML=syms.map(s=>`<div class="px"><div class="label">${s.replace("USDT","")} <span class="muted">/USDT</span></div><b id="px_${s}">–</b><div id="ch_${s}" class="label">–</div></div>`).join("")}
+ syms.forEach(s=>{const b=$("px_"+s);if(b&&PX[s])b.textContent=pfmt(PX[s]);const c=$("ch_"+s);if(c&&CH[s]!=null){c.textContent=(CH[s]>0?"▲ +":"▼ ")+CH[s].toFixed(2)+"% 24h";c.className="label "+cls(CH[s])}})}
+prices();
+
+/* ---------- pills */
+function pill(id,cl,t){const e=$(id);e.className="pill "+cl;e.innerHTML="<i></i>"+t}
+function pills(){pill("pPx",Date.now()-pxAt<10e3?"ok":"warn",pxAt?"Prices live":"Prices: connecting");if(!D)return;
+ const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<180e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"));
+ const wA=D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<300e3?"ok":"warn","Free watcher "+(wA<1e11?ago(wA):"–"));
+ const s=D.lastScan;pill("pS",s?"ok":"warn",s?"Last AI check "+hm(s.at):"AI check: not yet")}
+
+/* ---------- render */
+const sideChip=s=>s=="LONG"?'<span class="chip long">LONG · wins if price goes UP</span>':'<span class="chip short">SHORT · wins if price goes DOWN</span>';
+const opTxt={close_above:"closes above",close_below:"closes below",high_above:"goes above",low_below:"goes below"};
+const stTxt={watching:"Waiting for trigger",news_wait:"Triggered, waiting for news time to end",running:"Running"};
+function stepsHtml(i){const st=(i.trigger||{}).steps||[];const done=+String(i.triggerProgress||"0").split("/")[0];
+ return '<ul class="steps">'+st.map((s,k)=>`<li><span class="ck ${k<done?"on":""}">${k<done?"✓":k+1}</span><span>A <b>${esc(s.tf)}</b> candle ${opTxt[s.op]||esc(s.op)} <b>${pfmt(s.level)}</b></span></li>`).join("")+"</ul>"}
+function dist(i,lvl){const p=PX[i.symbol];return p?((lvl-p)/p*100).toFixed(2)+"%":""}
+function ideaCard(i,best){const g=i.grade||"C";
+ const main=`<div class="row"><div class="grade g${g}">${g}</div><div><div class="mid">${esc(i.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span></div>${sideChip(i.side)}</div><span class="sp"></span><div style="text-align:right"><div class="label">now</div><b data-px="${i.symbol}">${pfmt(PX[i.symbol])}</b></div></div>
+  <div class="label" style="margin-top:10px">How it starts (all steps, in order):</div>${stepsHtml(i)}
+  <div class="kv"><div><span class="label">Entry</span><b>${pfmt(i.entry)}</b></div><div><span class="label">🎯 Target</span><b class="up">${pfmt(i.tp)}</b></div><div><span class="label">🛑 Stop (Mark)</span><b class="dn">${pfmt(i.sl)}</b></div></div>
+  ${i.why?`<div class="todo" style="background:var(--card2);color:var(--ink)">💬 ${esc(i.why)}</div>`:""}`;
+ const side=`<div class="side"><div class="l"><span>Status</span><b>${esc(stTxt[i.status]||i.status)}</b></div><div class="l"><span>Grade</span><b>${g}${i.score?" · "+i.score+"/100":""}</b></div>
+  <div class="l"><span>Net R:R after fees</span><b>1 : ${i.net_rr}</b></div><div class="l"><span>Valid until</span><b>${dayl(i.valid_until)} ${hm(i.valid_until)}<br><small class="muted">${left(i.valid_until)}</small></b></div>
+  <div class="l"><span>Size</span><b>3 USDT × 10 isolated</b></div><div class="l"><span>Found</span><b>${hm(i.createdAt)}</b></div>
+  ${i.lastReview?`<div class="l"><span>Last re-check</span><b>${hm(i.lastReview.at)}: ${esc(i.lastReview.verdict)}</b></div>`:""}${i.risks?`<div class="l"><span>Watch out</span><span>${esc(i.risks)}</span></div>`:""}</div>`;
+ return `<div class="card">${best?`<div class="best"><div>${main}</div>${side}</div>`:`<div class="best"><div>${main}</div>${side}</div>`}</div>`}
+function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
+ $("mode").textContent=D.mode=="REAL"?"REAL MONEY":"PRACTICE MODE · no real orders";$("mode").className="mode"+(D.mode=="REAL"?" real":"");
+ $("bal").textContent=b.wallet!=null?usd(b.wallet):"–";$("avail").textContent=usd(b.available);
+ [["today",inc.today],["d7",inc.d7]].forEach(([k,v])=>{$(k).textContent=usd(v,1);$(k).className=cls(v)});
+ const sl=D.slots||{used:0,max:4,ideas:0,running:0};$("slotTxt").textContent=sl.used+" / "+sl.max+(sl.used>=sl.max?" · FULL":"");
+ let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?'<div class="slot run">running</div>':k<sl.running+sl.ideas?'<div class="slot idea">idea</div>':'<div class="slot">free</div>';$("slots").innerHTML=h;
+ const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Coins that need more are skipped. When all slots are running, the hourly check only reviews them.`;
+ const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
+ $("best").className="";$("best").innerHTML=ideas.length?bestMini(ideas[0]):`<div class="empty">${D.lastScan?esc(D.lastScan.verdict||"No trade at the last check — wait."):"Waiting for the first hourly check…"}${D.lastScan&&D.lastScan.market_note?`<br><small>${esc(D.lastScan.market_note)}</small>`:""}</div>`;
+ $("ideaList").innerHTML=ideas.length?ideas.map((i,k)=>ideaCard(i,k==0)).join(""):'<div class="card empty">No waiting ideas right now.</div>';
+ runs();orders();hist(inc);alerts();news();prices();live();pills()}
+const rk=i=>({A:3,B:2,C:1}[i.grade]||0)*100+(+i.score||0)+(+i.net_rr||0)*5;
+function bestMini(i){return `<div class="row" style="margin-top:8px"><div class="grade g${i.grade}">${i.grade}</div><div><div class="mid">${esc(i.symbol)}</div>${sideChip(i.side)}</div></div>
+ <div class="kv"><div><span class="label">Entry</span><b>${pfmt(i.entry)}</b></div><div><span class="label">Target</span><b class="up">${pfmt(i.tp)}</b></div><div><span class="label">Stop</span><b class="dn">${pfmt(i.sl)}</b></div></div>
+ <div class="row" style="margin-top:8px"><span class="label">Net R:R 1:${i.net_rr} · ${esc(stTxt[i.status]||i.status)} · trigger ${esc(i.triggerProgress||"0/"+((i.trigger||{}).steps||[]).length)}</span><span class="sp"></span><span class="label">valid ${left(i.valid_until)}</span></div>`}
+function runList(){const out=[];const b=D.binance||{};const prac=(D.ideas||[]).filter(i=>i.status=="running"&&i.mode!="REAL");
+ (b.positions||[]).forEach(p=>out.push({real:1,symbol:p.symbol,side:p.side,entry:p.entry,qty:p.qty,sl:p.sl,tp:p.tp,since:p.updated,margin:p.margin}));
+ prac.forEach(i=>out.push({real:0,symbol:i.symbol,side:i.side,entry:i.fillPrice,qty:+i.qty,sl:i.slNow,tp:i.tp,since:i.openedAt,be:i.beMoved,margin:3}));return out}
+function runs(){const L=runList();$("nR").textContent=L.length;
+ $("runList").innerHTML=L.length?L.map((t,k)=>`<div class="card"><div class="row"><div><div class="mid">${esc(t.symbol.replace("USDT",""))} <span class="muted" style="font-size:13px">USDT</span> ${t.real?'<span class="tag">Binance</span>':'<span class="tag p">PRACTICE</span>'}</div>${sideChip(t.side)}</div><span class="sp"></span><div style="text-align:right"><div class="big" id="rp${k}">–</div><div class="label" id="rq${k}"></div></div></div>
+  <div class="kv"><div><span class="label">Entry</span><b>${pfmt(t.entry)}</b></div><div><span class="label">Now (Mark)</span><b id="rn${k}">–</b></div><div><span class="label">Since</span><b>${t.since?hm(t.since):"–"}</b></div></div>
+  <div class="kv" style="grid-template-columns:1fr 1fr"><div><span class="label">🎯 Take profit</span><b class="up">${pfmt(t.tp)}</b></div><div><span class="label">🛑 Stop loss</span><b class="dn">${pfmt(t.sl)}</b></div></div>
+  ${t.sl&&t.tp?`<div class="bar"><div class="e" id="re${k}"></div><div class="m" id="rm${k}"></div></div><div class="barl"><span>🛑 ${pfmt(t.sl)}</span><span>entry ${pfmt(t.entry)}</span><span>🎯 ${pfmt(t.tp)}</span></div>`:""}
+  <div class="todo ${(!t.sl||!t.tp)&&t.real?"warn":""}" id="rt${k}">${todo(t)}</div></div>`).join(""):'<div class="card empty">No running trades.</div>'}
+function todo(t){if(t.real&&(!t.sl||!t.tp))return"⚠️ No "+(!t.sl?"stop loss":"take profit")+" on Binance for this trade. Add it in the Binance app.";
+ if(t.be)return"🛡️ Stop moved to entry + fees. This trade can't lose now. Just wait.";return t.real?"✅ Stop loss and take profit are on Binance. Just wait.":"👀 Practice trade: the free watcher checks the stop and target every minute."}
+function live(){if(!D)return;const L=runList();let tot=0,have=0;L.forEach((t,k)=>{const m=MK[t.symbol]||PX[t.symbol];if(!m)return;const pnl=(m-t.entry)*t.qty*(t.side=="LONG"?1:-1);
+  if(t.real){tot+=pnl;have=1}const e=$("rp"+k);if(!e)return;e.textContent=usd(pnl,1);e.className="big "+cls(pnl);$("rq"+k).textContent=t.margin?((pnl/t.margin*100>0?"+":"")+(pnl/t.margin*100).toFixed(1)+"% of margin"):"";$("rn"+k).textContent=pfmt(m);
+  if(t.sl&&t.tp&&$("rm"+k)){const lo=Math.min(t.sl,t.tp),hi=Math.max(t.sl,t.tp),f=x=>{let v=(x-lo)/(hi-lo);if(t.side=="SHORT")v=1-v;return Math.max(0,Math.min(1,v))*100+"%"};
+   $("rm"+k).style.left=f(m);$("re"+k).style.left=f(t.entry)}});
+ document.querySelectorAll("[data-px]").forEach(e=>e.textContent=pfmt(PX[e.dataset.px]));
+ const b=D.binance||{};const u=have?tot:b.upnl;$("upnl").textContent=usd(u,1);$("upnl").className="mid "+cls(u);if(b.wallet!=null&&have)$("bal").textContent=usd(b.wallet)}
+function orders(){const o=((D.binance||{}).orders||[]);$("ordersBox").innerHTML=o.length?`<div class="card" style="margin-top:12px"><div class="label">⏳ Waiting orders on Binance</div><div class="list">${o.map(x=>`<div class="it"><b>${esc(x.symbol)}</b><span class="tag">${esc(x.type)}</span><span class="${x.side=="BUY"?"up":"dn"}">${x.side}</span><span>${pfmt(x.price)}</span><span class="sp"></span><span class="label">${hm(x.time)}</span></div>`).join("")}</div></div>`:""}
+const hTxt={closed:"Closed",removed:"Removed",invalid:"Not valid",expired:"Expired",replaced:"Replaced",too_late:"Too late",skipped:"Skipped",rejected:"Not added",error:"Error"};
+function hist(inc){$("stats").innerHTML=`<div><span class="label">30 days</span><b class="${cls(inc.d30)}">${usd(inc.d30,1)}</b></div><div><span class="label">Wins / losses</span><b>${inc.wins??"–"} / ${inc.losses??"–"}</b></div><div><span class="label">Fees (35 d)</span><b>${usd(inc.fees35)}</b></div>`;
+ const bt=(inc.trades||[]).slice(0,15).map(t=>({at:t.time,html:`<b>${esc(t.symbol.replace("USDT",""))}</b><span class="tag">Binance</span><span class="sp"></span><b class="${cls(t.net)}">${usd(t.net,1)}</b><span class="label">${dayl(t.time)} ${hm(t.time)}</span>`}));
+ const ph=(D.history||[]).slice(0,15).map(i=>({at:i.closedAt,html:`<b>${esc(i.symbol.replace("USDT",""))}</b><span class="chip ${i.side=="LONG"?"long":"short"}" style="font-size:10px">${i.side}</span><span class="tag p">${esc(hTxt[i.status]||i.status)}</span><span class="label" style="flex:1">${esc(i.reason||"")}</span>${i.pnl!=null?`<b class="${cls(i.pnl)}">${usd(i.pnl,1)}</b>`:""}<span class="label">${hm(i.closedAt)}</span>`}));
+ const all=[...bt,...ph].sort((a,c)=>new Date(c.at)-new Date(a.at)).slice(0,25);$("hist").innerHTML=all.length?all.map(x=>`<div class="it">${x.html}</div>`).join(""):'<div class="empty">No closed trades yet.</div>'}
+const aIc={new:"💡",entry:"🚀",move:"🛡️",closed:"🏁",invalid:"❌",expired:"⌛",replaced:"🔁",removed:"🗑️",too_late:"🐢",skip:"⏭️",news:"📅",close:"⚠️",error:"⛔",skipped:"⏭️",rejected:"⏭️"};
+function alerts(){const a=(D.alerts||[]).filter(x=>Date.now()-new Date(x.at)<48*3600e3);$("alertList").innerHTML=a.length?a.slice(0,20).map(x=>`<div class="al"><span class="w">${hm(x.at)}<br>${dayl(x.at).split(" ").slice(0,1)}</span><span>${aIc[x.kind]||"•"} ${esc(x.text)}</span></div>`).join(""):'<div class="empty">No alerts in the last 2 days.</div>'}
+function news(){const n=D.news||{},ev=n.events||[],now=Date.now();let ban="";
+ const cur=ev.find(e=>new Date(e.window_start)<=now&&now<new Date(e.window_end)&&e.impact=="red");
+ const soon=ev.find(e=>e.impact=="red"&&new Date(e.window_start)>now&&new Date(e.window_start)-now<6*3600e3);
+ const care=ev.find(e=>new Date(e.window_start)<=now&&now<new Date(e.window_end)&&e.impact!="red");
+ if(cur)ban=`<div class="banner red">⛔<div>DON'T TRADE NOW until ${hm(cur.window_end)}<small>${esc(cur.title)}. New trades wait until the window ends.</small></div></div>`;
+ else if(soon)ban=`<div class="banner amb">⏰<div>No-trade time starts at ${hm(soon.window_start)} (${left(soon.window_start).replace(" left","")} from now)<small>${esc(soon.title)} · ${esc(soon.window_label)}</small></div></div>`;
+ else if(care)ban=`<div class="banner amb">⚠️<div>Be careful today<small>${esc(care.title)} · ${esc(care.window_label)}</small></div></div>`;
+ else ban=`<div class="banner ok">✅<div>OK to trade now<small>No big news window in the next 6 hours.</small></div></div>`;$("newsBanner").innerHTML=ban;
+ const g={};ev.forEach(e=>{const d=e.date||e.window_start.slice(0,10);(g[d]=g[d]||[]).push(e)});const today=tfmt(new Date(),{year:"numeric",month:"2-digit",day:"2-digit"}).split("/").reverse().join("-");
+ const tom=tfmt(new Date(now+86400e3),{year:"numeric",month:"2-digit",day:"2-digit"}).split("/").reverse().join("-");
+ $("newsList").innerHTML=(Object.keys(g).length?Object.keys(g).sort().slice(0,6).map(d=>`<div class="day">${d==today?"Today":d==tom?"Tomorrow":dayl(d+"T12:00:00+05:30")}</div>`+g[d].map(e=>`<div class="ev"><span class="t b-${e.impact}">${e.all_day?"All day":hm(e.window_start)+"–"+hm(e.window_end)}</span><span style="flex:1"><b>${esc(e.title)}</b><br><span class="label">${esc(e.window_label)}</span></span><span class="tag b-${e.impact}">${esc(e.badge||"")}</span></div>`).join("")).join(""):'<div class="empty">No big news in the next 2 weeks.</div>')
+  +`<div class="label" style="margin-top:8px">Times are Sri Lanka time. Red = don't trade. Yellow = be careful. Calendar covers up to ${esc(n.coverageUntil||"–")}.</div>`}
+</script></body></html>
