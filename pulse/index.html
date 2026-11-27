@@ -63,7 +63,7 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
  <div class="top"><div class="logo"><span class="dot"></span>Pulse <span class="muted" style="font-weight:500">· futures desk</span></div>
   <span id="mode" class="mode">PRACTICE MODE</span>
   <div class="clock"><b id="clk">--:--:--</b><small>Sri Lanka time (UTC+5:30)</small></div></div>
- <div class="pills"><span class="pill" id="pPx"><i></i>Prices: connecting</span><span class="pill" id="pBn"><i></i>Binance: –</span><span class="pill" id="pW"><i></i>Watcher: –</span><span class="pill" id="pS"><i></i>Last AI check: –</span></div>
+ <div class="pills"><span class="pill" id="pPx"><i></i>Prices: connecting</span><span class="pill" id="pBn"><i></i>Binance: –</span><span class="pill" id="pW"><i></i>Watcher: –</span><span class="pill" id="pS"><i></i>Last AI check: –</span><span class="pill ok" id="pN"><i></i>Next AI scan: –</span></div>
  <div id="newsBanner"></div>
 
  <div class="grid hero" id="top">
@@ -72,8 +72,9 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
    <div class="kv"><div><span class="label">Free</span><b id="avail">–</b></div><div><span class="label">Today</span><b id="today">–</b></div><div><span class="label">7 days</span><b id="d7">–</b></div></div></div>
   <div class="card"><div class="row"><div class="label">🎯 Slots (ideas + running)</div><span class="sp"></span><b id="slotTxt">–</b></div>
    <div class="slots" id="slots"></div><div class="legend"><span style="color:var(--blue)">■</span> waiting idea · <span style="color:var(--up)">■</span> running trade · ▢ free</div>
-   <div class="legend" id="rules" style="margin-top:8px"></div></div>
-  <div class="card" id="bestCard"><div class="label">⭐ Best idea from the last check</div><div id="best" class="empty">Waiting for the first hourly check…</div></div>
+   <div class="legend" id="rules" style="margin-top:8px"></div>
+   <div class="side" style="margin-top:10px"><div class="row"><b>🕐 Full AI scan every 1.5 hours</b><span class="sp"></span><b id="nextScan" style="color:var(--teal)">–</b></div><div class="legend" id="sched" style="margin-top:4px"></div></div></div>
+  <div class="card" id="bestCard"><div class="label">⭐ Best idea from the last check</div><div id="best" class="empty">Waiting for the first AI check…</div></div>
  </div>
 
  <h2 id="ideas">💡 Ideas <span class="n" id="nI">0</span></h2><div id="ideaList" class="grid"></div>
@@ -85,7 +86,7 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
  </div>
  <div class="grid two"><div><h2 id="news">📅 News &amp; no-trade times</h2><div class="card news" id="newsList"></div></div>
   <div><h2 id="prices">⚡ Live prices</h2><div class="prices" id="pxGrid"></div></div></div>
- <div class="foot">Ideas are not guarantees. Prices move fast. This page only shows information; it can't place or close trades.<br>Data is encrypted with your PIN. Live prices come straight from Binance. No AI tokens are used to update this page.</div>
+ <div class="foot">Ideas are not guarantees. Prices move fast. This page only shows information; it can't place or close trades.<br>Data is encrypted with your PIN. Live prices come straight from Binance. Balance, trades and orders come from your Binance live account stream; the desk data refreshes about once a minute. No AI tokens are used to update this page.</div>
 </div>
 <nav class="tabs"><a href="#top"><span>💰</span>Balance</a><a href="#ideas"><span>💡</span>Ideas</a><a href="#running"><span>🏃</span>Running</a><a href="#history"><span>📜</span>History</a><a href="#news"><span>📅</span>News</a><a href="#prices"><span>⚡</span>Prices</a></nav>
 <script>
@@ -102,6 +103,18 @@ const cls=v=>v>0?"up":v<0?"dn":"";
 function pfmt(v){if(v==null||isNaN(v))return"–";v=+v;const a=Math.abs(v);return v.toFixed(a>=1000?1:a>=10?2:a>=1?3:a>=0.1?4:6)}
 const left=s=>{const ms=new Date(s)-Date.now();if(ms<=0)return"ended";const h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3);return h>=24?Math.floor(h/24)+"d "+h%24+"h left":h+"h "+m+"m left"};
 setInterval(()=>{$("clk").textContent=tfmt(new Date(),{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true});pills()},1000);
+
+
+/* ---------- AI scan schedule: every 90 min from 12:00 AM Sri Lanka time (16 a day) */
+function colomboMin(d){const t=tfmt(d,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).split(":").map(Number);return (t[0]%24)*60+t[1]+t[2]/60}
+function nextScan(){const now=new Date(),m=colomboMin(now);const n=Math.floor(m/90+1e-9)*90+90;return new Date(now.getTime()+(n-m)*60e3)}
+const SCHED=Array.from({length:16},(_,k)=>{const h=Math.floor(k*90/60),mi=k*90%60;return ((h%12)||12)+":"+String(mi).padStart(2,"0")+(h<12?" AM":" PM")});
+const lbl12=d=>{const t=tfmt(d,{hour:"2-digit",minute:"2-digit",hour12:false}).split(":").map(Number);const h=t[0]%24;return ((h%12)||12)+":"+String(Math.round(t[1]/30)*30%60).padStart(2,"0")+(h<12?" AM":" PM")};
+function sched(){const n=nextScan(),ms=n-Date.now(),mm=Math.floor(ms/60e3),ss=Math.floor(ms%60e3/1000),lbl=lbl12(n);
+ const cd=mm>=60?Math.floor(mm/60)+"h "+(mm%60)+"m":mm+"m "+String(ss).padStart(2,"0")+"s";
+ $("nextScan").textContent="Next: "+lbl+" · in "+cd;pill("pN","ok","Next AI scan "+lbl+" (in "+cd+")");
+ $("sched").innerHTML=SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Between scans the free live watcher checks your ideas and trades every second."}
+setInterval(sched,1000);
 
 /* ---------- PIN + decrypt (PBKDF2-SHA256 + AES-256-GCM, same as publisher) */
 async function derive(pin,env){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveKey"]);
@@ -136,8 +149,8 @@ prices();
 /* ---------- pills */
 function pill(id,cl,t){const e=$(id);e.className="pill "+cl;e.innerHTML="<i></i>"+t}
 function pills(){pill("pPx",Date.now()-pxAt<10e3?"ok":"warn",pxAt?"Prices live":"Prices: connecting");if(!D)return;
- const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<300e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"));
- const wA=D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<400e3?"ok":"warn","Free watcher "+(wA<1e11?ago(wA):"–"));
+ const us=D.userStream||{},uA=us.at?Date.now()-new Date(us.at):1e12;if(us.connected&&uA<300e3)pill("pBn","ok","Binance account: live stream");else{const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<300e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"))}
+ const ws=D.ws||{};const wA=ws.at?Date.now()-new Date(ws.at):D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<400e3&&ws.connected!==false?"ok":"warn",(ws.connected?"Live watcher (every 1 s) ":"Watcher ")+(wA<1e11?ago(wA):"–"));
  const s=D.lastScan;pill("pS",s?"ok":"warn",s?"Last AI check "+hm(s.at):"AI check: not yet")}
 
 /* ---------- render */
@@ -163,9 +176,9 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  [["today",inc.today],["d7",inc.d7]].forEach(([k,v])=>{$(k).textContent=usd(v,1);$(k).className=cls(v)});
  const sl=D.slots||{used:0,max:4,ideas:0,running:0};$("slotTxt").textContent=sl.used+" / "+sl.max+(sl.used>=sl.max?" · FULL":"");
  let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?'<div class="slot run">running</div>':k<sl.running+sl.ideas?'<div class="slot idea">idea</div>':'<div class="slot">free</div>';$("slots").innerHTML=h;
- const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Coins that need more are skipped. When all slots are running, the hourly check only reviews them.`;
+ const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Coins that need more are skipped. When all slots are running, the AI check only reviews them (no new scan).`;
  const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
- $("best").className="";$("best").innerHTML=ideas.length?bestMini(ideas[0]):`<div class="empty">${D.lastScan?esc(D.lastScan.verdict||"No trade at the last check — wait."):"Waiting for the first hourly check…"}${D.lastScan&&D.lastScan.market_note?`<br><small>${esc(D.lastScan.market_note)}</small>`:""}</div>`;
+ $("best").className="";$("best").innerHTML=ideas.length?bestMini(ideas[0]):`<div class="empty">${D.lastScan?esc(D.lastScan.verdict||"No trade at the last check — wait."):"Waiting for the first AI check…"}${D.lastScan&&D.lastScan.market_note?`<br><small>${esc(D.lastScan.market_note)}</small>`:""}</div>`;
  $("ideaList").innerHTML=ideas.length?ideas.map((i,k)=>ideaCard(i,k==0)).join(""):'<div class="card empty">No waiting ideas right now.</div>';
  runs();orders();hist(inc);alerts();news();prices();live();pills()}
 const rk=i=>({A:3,B:2,C:1}[i.grade]||0)*100+(+i.score||0)+(+i.net_rr||0)*5;
@@ -182,7 +195,7 @@ function runs(){const L=runList();$("nR").textContent=L.length;
   ${t.sl&&t.tp?`<div class="bar"><div class="e" id="re${k}"></div><div class="m" id="rm${k}"></div></div><div class="barl"><span>🛑 ${pfmt(t.sl)}</span><span>entry ${pfmt(t.entry)}</span><span>🎯 ${pfmt(t.tp)}</span></div>`:""}
   <div class="todo ${(!t.sl||!t.tp)&&t.real?"warn":""}" id="rt${k}">${todo(t)}</div></div>`).join(""):'<div class="card empty">No running trades.</div>'}
 function todo(t){if(t.real&&(!t.sl||!t.tp))return"⚠️ No "+(!t.sl?"stop loss":"take profit")+" on Binance for this trade. Add it in the Binance app.";
- if(t.be)return"🛡️ Stop moved to entry + fees. This trade can't lose now. Just wait.";return t.real?"✅ Stop loss and take profit are on Binance. Just wait.":"👀 Practice trade: the free watcher checks the stop and target every minute."}
+ if(t.be)return"🛡️ Stop moved to entry + fees. This trade can't lose now. Just wait.";return t.real?"✅ Stop loss and take profit are on Binance. Just wait.":"👀 Practice trade: the free live watcher checks the stop and target every second."}
 function live(){if(!D)return;const L=runList();let tot=0,have=0;L.forEach((t,k)=>{const m=MK[t.symbol]||PX[t.symbol];if(!m)return;const pnl=(m-t.entry)*t.qty*(t.side=="LONG"?1:-1);
   if(t.real){tot+=pnl;have=1}const e=$("rp"+k);if(!e)return;e.textContent=usd(pnl,1);e.className="big "+cls(pnl);$("rq"+k).textContent=t.margin?((pnl/t.margin*100>0?"+":"")+(pnl/t.margin*100).toFixed(1)+"% of margin"):"";$("rn"+k).textContent=pfmt(m);
   if(t.sl&&t.tp&&$("rm"+k)){const lo=Math.min(t.sl,t.tp),hi=Math.max(t.sl,t.tp),f=x=>{let v=(x-lo)/(hi-lo);if(t.side=="SHORT")v=1-v;return Math.max(0,Math.min(1,v))*100+"%"};
