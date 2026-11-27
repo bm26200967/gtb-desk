@@ -74,7 +74,7 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
   <div class="card"><div class="row"><div class="label">🎯 Slots (ideas + running)</div><span class="sp"></span><b id="slotTxt">–</b></div><div class="cnt"><span id="runCnt" style="color:var(--up)">–</span><span id="slotCnt">–</span></div>
    <div class="slots" id="slots"></div><div class="legend"><span style="color:var(--blue)">■</span> waiting idea · <span style="color:var(--amb)">■</span> triggered, waiting (4 running max) · <span style="color:var(--up)">■</span> running · ▢ free</div>
    <div class="legend" id="rules" style="margin-top:8px"></div>
-   <div class="side" style="margin-top:10px"><div class="row"><b>🕐 Full AI scan every 1.5 hours</b><span class="sp"></span><b id="nextScan" style="color:var(--teal)">–</b></div><div class="legend" id="sched" style="margin-top:4px"></div></div></div>
+   <div class="side" style="margin-top:10px"><div class="row"><b>🕐 Full AI scan every hour</b><span class="sp"></span><b id="nextScan" style="color:var(--teal)">–</b></div><div class="legend" id="sched" style="margin-top:4px"></div></div></div>
   <div class="card" id="bestCard"><div class="label">⭐ Best idea from the last check</div><div id="best" class="empty">Waiting for the first AI check…</div></div>
  </div>
 
@@ -106,18 +106,18 @@ const left=s=>{const ms=new Date(s)-Date.now();if(ms<=0)return"ended";const h=Ma
 setInterval(()=>{$("clk").textContent=tfmt(new Date(),{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true});pills()},1000);
 
 
-/* ---------- AI scan schedule: every 90 min from 12:00 AM Sri Lanka time (16 a day) */
+/* ---------- AI scan schedule: every hour on the hour, Sri Lanka time (24 a day; from 27 Nov 5:23 PM) */
 function colomboMin(d){const t=tfmt(d,{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).split(":").map(Number);return (t[0]%24)*60+t[1]+t[2]/60}
-function nextScan(){const now=new Date(),m=colomboMin(now);const n=Math.floor(m/90+1e-9)*90+90;return new Date(now.getTime()+(n-m)*60e3)}
-const SCHED=Array.from({length:16},(_,k)=>{const h=Math.floor(k*90/60),mi=k*90%60;return ((h%12)||12)+":"+String(mi).padStart(2,"0")+(h<12?" AM":" PM")});
+function nextScan(){const now=new Date(),m=colomboMin(now);const n=Math.floor(m/60+1e-9)*60+60;return new Date(now.getTime()+(n-m)*60e3)}
+const SCHED=Array.from({length:24},(_,k)=>{const h=k,mi=0;return ((h%12)||12)+":"+String(mi).padStart(2,"0")+(h<12?" AM":" PM")});
 const lbl12=d=>{const t=tfmt(d,{hour:"2-digit",minute:"2-digit",hour12:false}).split(":").map(Number);const h=t[0]%24;return ((h%12)||12)+":"+String(Math.round(t[1]/30)*30%60).padStart(2,"0")+(h<12?" AM":" PM")};
 function sched(){const n=nextScan(),ms=n-Date.now(),mm=Math.floor(ms/60e3),ss=Math.floor(ms%60e3/1000),lbl=lbl12(n);
  const cd=mm>=60?Math.floor(mm/60)+"h "+(mm%60)+"m":mm+"m "+String(ss).padStart(2,"0")+"s";
  const run=D&&D.scanRunning&&D.scanRunning.startedAt?D.scanRunning:null, rA=run?Date.now()-new Date(run.startedAt):0;
- if(run&&rA<60*60e3){const t="AI scan running since "+hm(run.startedAt)+" ("+Math.floor(rA/60e3)+" min)";$("nextScan").textContent=t;$("nextScan").style.color="var(--amb)";pill("pN","warn",t)}
+ if(run&&rA<55*60e3){const t="AI scan running since "+hm(run.startedAt)+" ("+Math.floor(rA/60e3)+" min)";$("nextScan").textContent=t;$("nextScan").style.color="var(--amb)";pill("pN","warn",t)}
  else if(run){const t="Last AI scan did not finish (started "+hm(run.startedAt)+")";$("nextScan").textContent=t;$("nextScan").style.color="var(--dn)";pill("pN","bad",t)}
  else{$("nextScan").textContent="Next: "+lbl+" · in "+cd;$("nextScan").style.color="var(--teal)";pill("pN","ok","Next AI scan "+lbl+" (in "+cd+")")}
- $("sched").innerHTML=SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Scans can start up to ~15 min after the slot time. Between scans the free live watcher checks your ideas and trades every second."}
+ $("sched").innerHTML="Every hour on the hour: "+SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Scans can start up to ~10 min after the hour. Between scans the free live watcher checks your ideas and trades every second."}
 setInterval(sched,1000);
 
 /* ---------- PIN + decrypt (PBKDF2-SHA256 + AES-256-GCM, same as publisher) */
