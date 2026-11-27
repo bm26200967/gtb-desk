@@ -173,7 +173,7 @@ function ideaCard(i,best){const g=i.grade||"C";
   ${i.why?`<div class="todo" style="background:var(--card2);color:var(--ink)">💬 ${esc(i.why)}</div>`:""}`;
  const side=`<div class="side"><div class="l"><span>Status</span><b>${esc(stTxt[i.status]||i.status)}</b></div><div class="l"><span>Grade</span><b>${g}${i.score?" · "+i.score+"/100":""}</b></div>
   <div class="l"><span>Net R:R after fees</span><b>1 : ${i.net_rr}</b></div><div class="l"><span>Valid until</span><b>${dayl(i.valid_until)} ${hm(i.valid_until)}<br><small class="muted">${left(i.valid_until)}</small></b></div>
-  <div class="l"><span>Size</span><b>3 USDT × 10 isolated</b></div><div class="l"><span>Found</span><b>${hm(i.createdAt)}</b></div>
+  <div class="l"><span>Size</span><b>3 USDT × 10 isolated</b></div><div class="l"><span>Found</span><b>${i.source?esc(i.source):hm(i.createdAt)}</b></div>
   ${i.lastReview?`<div class="l"><span>Last re-check</span><b>${hm(i.lastReview.at)}: ${esc(i.lastReview.verdict)}</b></div>`:""}${i.risks?`<div class="l"><span>Watch out</span><span>${esc(i.risks)}</span></div>`:""}</div>`;
  return `<div class="card">${best?`<div class="best"><div>${main}</div>${side}</div>`:`<div class="best"><div>${main}</div>${side}</div>`}</div>`}
 function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
@@ -185,7 +185,7 @@ function render(){if(!D)return;const b=D.binance||{},inc=D.income||{};
  const oi=(D.ideas||[]),rI=oi.filter(i=>i.status=="running"||i.status=="entering"),wI=oi.filter(i=>!(i.status=="running"||i.status=="entering")).sort((a,c)=>(c.status=="run_wait")-(a.status=="run_wait")||rk(c)-rk(a));
  const sb=i=>i?`<b style="font-size:11px">${esc(i.symbol.replace("USDT",""))} ${i.side=="LONG"?"▲":"▼"}</b><small>${/^[ABC]$/.test(i.grade)?i.grade:"–"} · 1:${esc(i.net_rr)}</small>`:"";
  let h="";for(let k=0;k<sl.max;k++)h+=k<sl.running?`<div class="slot run">${sb(rI[k])||"running"}</div>`:k<sl.running+sl.ideas?`<div class="slot ${wI[k-sl.running]&&wI[k-sl.running].status=="run_wait"?"wait":"idea"}">${sb(wI[k-sl.running])||"idea"}</div>`:'<div class="slot">free</div>';$("slots").innerHTML=h;
- const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Grades A, B and C get real orders when triggered (R:R: A 1:2+, B/C 1:1.5+). Coins that need more margin are skipped. 12 slots for ideas + trades, at most 4 trades running at once (a 5th trigger waits). Full slots: a stronger new idea replaces the weakest waiting one; running trades are never replaced.`;
+ const r=D.rules||{};$("rules").textContent=`Each trade: ${r.margin} USDT × ${r.leverage} ${String(r.marginType||"").toLowerCase()} (${r.margin*r.leverage} USDT). Grades A, B and C get real orders when triggered (R:R: A 1:2+, B/C 1:1.5+). Coins that need more margin are skipped. One best idea per check goes into the slots. 12 slots for ideas + trades, at most 4 trades running at once (a 5th trigger waits). Full slots: a stronger new idea replaces the weakest waiting one; running trades are never replaced.`;
  const ideas=(D.ideas||[]).filter(i=>i.status!="running").sort((a,c)=>rk(c)-rk(a));$("nI").textContent=ideas.length;
  $("best").className="";const W=D.lastScan&&D.lastScan.watch&&D.lastScan.watch.symbol?D.lastScan.watch:null;
  const wIsIdea=W&&ideas.some(i=>i.symbol==W.symbol&&i.side==W.side);
