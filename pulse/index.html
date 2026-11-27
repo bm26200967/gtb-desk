@@ -115,7 +115,7 @@ function sched(){const n=nextScan(),ms=n-Date.now(),mm=Math.floor(ms/60e3),ss=Ma
  const cd=mm>=60?Math.floor(mm/60)+"h "+(mm%60)+"m":mm+"m "+String(ss).padStart(2,"0")+"s";
  const run=D&&D.scanRunning&&D.scanRunning.startedAt?D.scanRunning:null, rA=run?Date.now()-new Date(run.startedAt):0;
  if(run&&rA<55*60e3){const t="AI scan running since "+hm(run.startedAt)+" ("+Math.floor(rA/60e3)+" min)";$("nextScan").textContent=t;$("nextScan").style.color="var(--amb)";pill("pN","warn",t)}
- else if(run){const t="Last AI scan did not finish (started "+hm(run.startedAt)+")";$("nextScan").textContent=t;$("nextScan").style.color="var(--dn)";pill("pN","bad",t)}
+ else if(run){const t="Last AI scan did not finish (started "+hm(run.startedAt)+") · next "+lbl+" (in "+cd+")";$("nextScan").textContent=t;$("nextScan").style.color="var(--dn)";pill("pN","bad",t)}
  else{$("nextScan").textContent="Next: "+lbl+" · in "+cd;$("nextScan").style.color="var(--teal)";pill("pN","ok","Next AI scan "+lbl+" (in "+cd+")")}
  $("sched").innerHTML="Every hour on the hour: "+SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Scans can start up to ~10 min after the hour. Between scans the free live watcher checks your ideas and trades every second."}
 setInterval(sched,1000);
