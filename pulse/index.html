@@ -63,8 +63,8 @@ button{background:var(--teal);color:#04201b;border:0;border-radius:12px;padding:
  <div class="top"><div class="logo"><span class="dot"></span>Pulse <span class="muted" style="font-weight:500">· futures desk</span></div>
   <span id="mode" class="mode">PRACTICE MODE</span>
   <div class="clock"><b id="clk">--:--:--</b><small>Sri Lanka time (UTC+5:30)</small></div></div>
- <div class="pills"><span class="pill" id="pPx"><i></i>Prices: connecting</span><span class="pill" id="pBn"><i></i>Binance: –</span><span class="pill" id="pW"><i></i>Watcher: –</span><span class="pill" id="pS"><i></i>Last AI check: –</span><span class="pill ok" id="pN"><i></i>Next AI scan: –</span></div>
- <div id="newsBanner"></div>
+ <div class="pills"><span class="pill" id="pPx"><i></i>Prices: connecting</span><span class="pill" id="pD"><i></i>Desk data: –</span><span class="pill" id="pBn"><i></i>Binance: –</span><span class="pill" id="pW"><i></i>Watcher: –</span><span class="pill" id="pS"><i></i>Last AI check: –</span><span class="pill ok" id="pN"><i></i>Next AI scan: –</span></div>
+ <div id="stall"></div><div id="newsBanner"></div>
 
  <div class="grid hero" id="top">
   <div class="card"><div class="label">💰 My Binance futures balance</div><div class="big" id="bal">–</div>
@@ -112,8 +112,11 @@ const SCHED=Array.from({length:16},(_,k)=>{const h=Math.floor(k*90/60),mi=k*90%6
 const lbl12=d=>{const t=tfmt(d,{hour:"2-digit",minute:"2-digit",hour12:false}).split(":").map(Number);const h=t[0]%24;return ((h%12)||12)+":"+String(Math.round(t[1]/30)*30%60).padStart(2,"0")+(h<12?" AM":" PM")};
 function sched(){const n=nextScan(),ms=n-Date.now(),mm=Math.floor(ms/60e3),ss=Math.floor(ms%60e3/1000),lbl=lbl12(n);
  const cd=mm>=60?Math.floor(mm/60)+"h "+(mm%60)+"m":mm+"m "+String(ss).padStart(2,"0")+"s";
- $("nextScan").textContent="Next: "+lbl+" · in "+cd;pill("pN","ok","Next AI scan "+lbl+" (in "+cd+")");
- $("sched").innerHTML=SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Between scans the free live watcher checks your ideas and trades every second."}
+ const run=D&&D.scanRunning&&D.scanRunning.startedAt?D.scanRunning:null, rA=run?Date.now()-new Date(run.startedAt):0;
+ if(run&&rA<60*60e3){const t="AI scan running since "+hm(run.startedAt)+" ("+Math.floor(rA/60e3)+" min)";$("nextScan").textContent=t;$("nextScan").style.color="var(--amb)";pill("pN","warn",t)}
+ else if(run){const t="Last AI scan did not finish (started "+hm(run.startedAt)+")";$("nextScan").textContent=t;$("nextScan").style.color="var(--dn)";pill("pN","bad",t)}
+ else{$("nextScan").textContent="Next: "+lbl+" · in "+cd;$("nextScan").style.color="var(--teal)";pill("pN","ok","Next AI scan "+lbl+" (in "+cd+")")}
+ $("sched").innerHTML=SCHED.map(s=>s==lbl?`<b style="color:var(--teal)">${s}</b>`:s).join(" · ")+"<br>Scans can start up to ~15 min after the slot time. Between scans the free live watcher checks your ideas and trades every second."}
 setInterval(sched,1000);
 
 /* ---------- PIN + decrypt (PBKDF2-SHA256 + AES-256-GCM, same as publisher) */
@@ -149,10 +152,12 @@ prices();
 /* ---------- pills */
 function pill(id,cl,t){const e=$(id);e.className="pill "+cl;e.innerHTML="<i></i>"+t}
 function pills(){pill("pPx",Date.now()-pxAt<10e3?"ok":"warn",pxAt?"Prices live":"Prices: connecting");if(!D)return;
- const us=D.userStream||{},uA=us.at?Date.now()-new Date(us.at):1e12;if(us.connected&&uA<300e3)pill("pBn","ok","Binance account: live stream");else{const bA=D.binance&&D.binance.at?Date.now()-new Date(D.binance.at):1e12;pill("pBn",bA<300e3?"ok":bA<900e3?"warn":"bad","Binance "+(bA<1e11?ago(bA):"–"))}
- const ws=D.ws||{};const wA=ws.at?Date.now()-new Date(ws.at):D.lastWatch?Date.now()-new Date(D.lastWatch):1e12;pill("pW",wA<400e3&&ws.connected!==false?"ok":"warn",(ws.connected?"Live watcher (every 1 s) ":"Watcher ")+(wA<1e11?ago(wA):"–"));
- const s=D.lastScan;pill("pS",s?"ok":"warn",s?"Last AI check "+hm(s.at):"AI check: not yet")}
-
+ const age=s=>s?Date.now()-new Date(s):1e12, lv=(ms,ok,warn)=>ms<ok?"ok":ms<warn?"warn":"bad", hb=D.hb||{};
+ const dA=age(D.builtAt);pill("pD",lv(dA,150e3,300e3),"Desk data "+(dA<1e11?ago(dA):"–"));
+ const aA=age(hb.account||(D.binance||{}).at);pill("pBn",lv(aA,150e3,300e3),"Binance account "+(aA<1e11?ago(aA):"–")+((D.userStream||{}).connected?" · live stream":""));
+ const wA=age(hb.watcher||(D.ws||{}).at);pill("pW",lv(wA,150e3,300e3),"Live watcher (1 s) "+(wA<1e11?ago(wA):"–"));
+ const s=D.lastScan;pill("pS",s?"ok":"warn",s?"Last AI check "+hm(s.finishedAt||s.at):"AI check: not yet");
+ const st=$("stall");if(dA>180e3&&dA<1e11){st.innerHTML=`<div class="banner red">⛔<div>Desk data stalled: last update ${hm(D.builtAt)} (${ago(dA)})<small>The programs on the box are not updating (the box may be paused). Live prices still work. Stop loss and take profit on Binance still protect open trades.</small></div></div>`}else st.innerHTML=""}
 /* ---------- render */
 const sideChip=s=>s=="LONG"?'<span class="chip long">LONG · wins if price goes UP</span>':'<span class="chip short">SHORT · wins if price goes DOWN</span>';
 const opTxt={close_above:"closes above",close_below:"closes below",high_above:"goes above",low_below:"goes below"};
